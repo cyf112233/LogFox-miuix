@@ -3,7 +3,7 @@ package com.f0x1d.logfox.feature.logging.presentation.list.model
 import com.f0x1d.logfox.feature.logging.api.model.LogLine
 
 fun LogLine.toPresentationModel(
-    displayText: CharSequence,
+    displayText: String,
     expanded: Boolean,
     selected: Boolean,
     textSize: Float,

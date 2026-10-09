@@ -1,0 +1,75 @@
+name: Build debug APK (manual)
+
+# Manual-only helper: builds an installable debug APK on a clean runner and uploads it as an
+# artifact. Useful when the local machine cannot run the Android toolchain (for example aarch64
+# PRoot environments where the SDK's native `aidl`/`aapt2` binaries crash).
+on:
+  workflow_dispatch:
+    inputs:
+      upload_artifact:
+        description: 'Upload the built APK as a workflow artifact'
+        type: boolean
+        default: true
+      gradle_args:
+        description: 'Extra Gradle arguments'
+        type: string
+        required: false
+        default: ''
+
+concurrency:
+  group: build-debug-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK platform 37 and build-tools 37.0.0
+        run: |
+          set -euxo pipefail
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager --install "platform-tools" "build-tools;37.0.0"
+          # Miuix 0.9.4 requires compiling against API 37. Depending on the SDK channel it is
+          # published either as "platforms;android-37" or as a minor-versioned package.
+          sdkmanager --install "platforms;android-37" \
+            || sdkmanager --channel=3 --install "platforms;android-37.0"
+
+      - name: Show toolchain versions
+        run: |
+          java -version
+          ./gradlew --version
+
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace --no-daemon ${{ inputs.gradle_args }}
+
+      - name: List outputs
+        if: always()
+        run: ls -la app/build/outputs/apk/debug/ || true
+
+      - name: Upload APK
+        if: ${{ success() && inputs.upload_artifact }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: logfox-debug-apk
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
+          path: app/build/outputs/apk/debug/*.apk

@@ -1,13 +1,13 @@
 package com.f0x1d.logfox.compose.designsystem.component.button
 
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import com.f0x1d.logfox.compose.base.preview.DayNightPreview
-import com.f0x1d.logfox.compose.designsystem.Icons
 import com.f0x1d.logfox.compose.designsystem.theme.LogFoxTheme
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Back
 
 @Composable
 fun NavigationBackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
@@ -16,7 +16,7 @@ fun NavigationBackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
         onClick = onClick,
     ) {
         Icon(
-            painter = painterResource(id = Icons.ic_arrow_back),
+            imageVector = MiuixIcons.Back,
             contentDescription = null,
         )
     }

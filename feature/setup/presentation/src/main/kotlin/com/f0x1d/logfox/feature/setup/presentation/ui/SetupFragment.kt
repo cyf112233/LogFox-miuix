@@ -1,7 +1,6 @@
 package com.f0x1d.logfox.feature.setup.presentation.ui
 
 import android.annotation.SuppressLint
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,6 +17,7 @@ import com.f0x1d.logfox.feature.setup.presentation.SetupViewModel
 import com.f0x1d.logfox.feature.setup.presentation.ui.compose.SetupScreenContent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 
 @AndroidEntryPoint
 internal class SetupFragment : BaseComposeFragment() {

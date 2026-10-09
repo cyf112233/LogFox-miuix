@@ -7,17 +7,24 @@ import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
+import androidx.navigation.navOptions
 import androidx.transition.ChangeBounds
 import androidx.transition.TransitionManager
 import com.f0x1d.logfox.R
+import com.f0x1d.logfox.compose.designsystem.theme.LogFoxTheme
 import com.f0x1d.logfox.core.compat.contrastedNavBarAvailable
 import com.f0x1d.logfox.core.compat.gesturesAvailable
 import com.f0x1d.logfox.core.context.hasNotificationsPermission
@@ -32,6 +39,7 @@ import com.f0x1d.logfox.presentation.MainCommand
 import com.f0x1d.logfox.presentation.MainSideEffect
 import com.f0x1d.logfox.presentation.MainViewModel
 import com.f0x1d.logfox.presentation.MainViewState
+import com.f0x1d.logfox.presentation.ui.compose.MainNavigationBar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -55,6 +63,10 @@ class MainActivity :
     ) { }
 
     private var barShown = true
+    private var selectedDestinationId by mutableStateOf(Directions.logs)
+    private val topLevelDestinationIds by lazy {
+        listOf(Directions.logs, Directions.crashes, Directions.recordings, Directions.settings)
+    }
     private val barScene by lazy {
         ConstraintSet().apply {
             clone(this@MainActivity, R.layout.activity_main)
@@ -79,9 +91,6 @@ class MainActivity :
         setupNavigation(viewModel.state.value.openCrashesOnStartup)
         setupBackPressedHandling()
 
-        barView?.setOnItemReselectedListener {
-            // Just do nothing
-        }
         setupBarInsets()
 
         showNotificationPermissionDialogIfNeeded(viewModel.state.value)
@@ -142,9 +151,41 @@ class MainActivity :
             )
         }
 
-        barView?.setupWithNavController(navController)
+        setupNavigationBar()
 
         navController.addOnDestinationChangedListener(this@MainActivity)
+    }
+
+    private fun ActivityMainBinding.setupNavigationBar() {
+        val bar = bottomNavigation ?: navigationRail ?: return
+        val landscape = navigationRail != null
+
+        bar.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        bar.setContent {
+            LogFoxTheme {
+                MainNavigationBar(
+                    currentDestinationId = selectedDestinationId,
+                    landscape = landscape,
+                    onSelect = { id -> navController.navigateToTopLevelDestination(id) },
+                )
+            }
+        }
+    }
+
+    private fun NavController.navigateToTopLevelDestination(id: Int) {
+        if (currentDestination?.id == id) return
+
+        navigate(
+            resId = id,
+            args = null,
+            navOptions = navOptions {
+                popUpTo(graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            },
+        )
     }
 
     override fun onDestinationChanged(
@@ -152,6 +193,10 @@ class MainActivity :
         destination: NavDestination,
         arguments: Bundle?,
     ) {
+        destination.hierarchy
+            .firstOrNull { it.id in topLevelDestinationIds }
+            ?.let { selectedDestinationId = it.id }
+
         val barShown = when (destination.id) {
             Directions.setupFragment -> false
             Directions.logsExtendedCopyFragment -> false

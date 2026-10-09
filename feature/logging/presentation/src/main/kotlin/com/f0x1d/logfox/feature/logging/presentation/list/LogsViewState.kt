@@ -1,8 +1,10 @@
 package com.f0x1d.logfox.feature.logging.presentation.list
 
+import androidx.compose.runtime.Immutable
 import com.f0x1d.logfox.feature.filters.api.model.UserFilter
 import com.f0x1d.logfox.feature.logging.presentation.list.model.LogLineItem
 
+@Immutable
 internal data class LogsViewState(
     val logs: List<LogLineItem>,
     val logsChanged: Boolean,

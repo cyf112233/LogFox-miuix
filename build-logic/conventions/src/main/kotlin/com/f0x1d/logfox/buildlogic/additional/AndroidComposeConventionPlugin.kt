@@ -21,6 +21,7 @@ class AndroidComposeConventionPlugin : Plugin<Project> {
 
         dependencies {
             implementation(bundle("androidx-compose"))
+            implementation(bundle("miuix"))
         }
     }
 }

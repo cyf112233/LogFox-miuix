@@ -1,10 +1,9 @@
 plugins {
-    alias(libs.plugins.logfox.android.feature)
+    alias(libs.plugins.logfox.android.feature.compose)
 }
 
 android {
     namespace = "com.f0x1d.logfox.feature.logging.presentation"
-    buildFeatures.viewBinding = true
 }
 
 dependencies {
@@ -20,7 +19,6 @@ dependencies {
     implementation(projects.core.tea.android)
     implementation(projects.core.ui.base)
     implementation(projects.core.ui.icons)
-    implementation(projects.core.ui.view)
     implementation(projects.core.recycler)
     implementation(projects.core.di)
     implementation(projects.core.coroutines)
@@ -34,6 +32,5 @@ dependencies {
     implementation(libs.bundles.androidx)
     implementation(libs.bundles.androidx.navigation)
     implementation(libs.material)
-    implementation(libs.insetter)
     implementation(libs.timber)
 }

@@ -1,35 +1,16 @@
 package com.f0x1d.logfox.feature.recordings.presentation.list.ui.compose
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,141 +26,168 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.f0x1d.logfox.compose.base.preview.DayNightPreview
+import com.f0x1d.logfox.compose.designsystem.Icons
 import com.f0x1d.logfox.compose.designsystem.component.placeholder.ListPlaceholder
 import com.f0x1d.logfox.compose.designsystem.theme.LogFoxTheme
-import com.f0x1d.logfox.core.ui.icons.Icons
-import com.f0x1d.logfox.feature.recordings.api.data.RecordingState
 import com.f0x1d.logfox.feature.recordings.presentation.list.RecordingsViewState
 import com.f0x1d.logfox.feature.recordings.presentation.list.ui.MockRecordingsScreenListener
 import com.f0x1d.logfox.feature.recordings.presentation.list.ui.RecordingsScreenListener
+import com.f0x1d.logfox.feature.recordings.api.data.RecordingState
 import com.f0x1d.logfox.feature.recordings.presentation.model.LogRecordingItem
 import com.f0x1d.logfox.feature.strings.Strings
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.DropdownImpl
+import top.yukonga.miuix.kmp.basic.DropdownItem
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SmallTopAppBar
+import top.yukonga.miuix.kmp.basic.SnackbarHost
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Clear
+import top.yukonga.miuix.kmp.icon.extended.Delete
+import top.yukonga.miuix.kmp.icon.extended.More
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import top.yukonga.miuix.kmp.overlay.OverlayListPopup
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.basic.ListPopupDefaults
+import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun RecordingsScreenContent(
-    modifier: Modifier = Modifier,
     state: RecordingsViewState,
     listener: RecordingsScreenListener = MockRecordingsScreenListener,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    modifier: Modifier = Modifier,
 ) {
-    val topAppBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(state = topAppBarState)
+    val scrollBehavior = MiuixScrollBehavior()
+
+    var showOverflowMenu by remember { mutableStateOf(false) }
+    var recordingPendingDeletion by remember { mutableStateOf<LogRecordingItem?>(null) }
+    var showClearConfirmation by remember { mutableStateOf(false) }
 
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier,
         topBar = {
-            TopRecordingsBar(
-                modifier = modifier,
-                onClearClick = listener.onClearClick,
-                onSaveAllClick = listener.onSaveAllClick,
+            SmallTopAppBar(
+                title = stringResource(Strings.recordings),
+                actions = {
+                    IconButton(onClick = { showClearConfirmation = true }) {
+                        Icon(
+                            imageVector = MiuixIcons.Clear,
+                            contentDescription = stringResource(Strings.clear),
+                        )
+                    }
+
+                    IconButton(onClick = { showOverflowMenu = true }) {
+                        Icon(
+                            imageVector = MiuixIcons.More,
+                            contentDescription = stringResource(Strings.recordings),
+                        )
+                    }
+                },
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        },
-        contentWindowInsets = WindowInsets.statusBars,
-    ) { contentPadding ->
-        RecordingsItems(
-            state = state,
-            listener = listener,
-            contentPadding = contentPadding,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .overScrollVertical()
+                .scrollEndHaptic()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            contentPadding = PaddingValues(
+                top = paddingValues.calculateTopPadding(),
+                bottom = paddingValues.calculateBottomPadding(),
+            ),
+            overscrollEffect = null,
+        ) {
+            item(key = "controls") {
+                RecordingControlsItem(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    recordingState = state.recordingState,
+                    onStartStopClick = listener.onStartStopClick,
+                    onPauseResumeClick = listener.onPauseResumeClick,
+                )
+            }
+
+            if (state.recordings.isEmpty()) {
+                item(key = "placeholder") {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 20.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        ListPlaceholder(
+                            iconResId = Icons.ic_recording,
+                            text = {
+                                Text(
+                                    text = stringResource(Strings.no_recordings),
+                                    style = MiuixTheme.textStyles.body1,
+                                    color = MiuixTheme.colorScheme.onBackgroundVariant,
+                                )
+                            },
+                        )
+                    }
+                }
+            }
+
+            items(
+                items = state.recordings,
+                key = { item -> item.recordingId },
+            ) { item ->
+                RecordingItem(
+                    item = item,
+                    onRecordingClick = listener.onRecordingClick,
+                    onRecordingDeleteClick = { recordingPendingDeletion = it },
+                )
+            }
+        }
+
+        // Popups and dialogs live inside the Scaffold but outside of the LazyColumn.
+        AnchorDropdownMenu(
+            show = showOverflowMenu,
+            items = listOf(
+                DropdownItem(
+                    text = stringResource(Strings.save_all_logs),
+                    onClick = listener.onSaveAllClick,
+                ),
+            ),
+            onDismissFinished = { showOverflowMenu = false },
         )
-    }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopRecordingsBar(
-    modifier: Modifier = Modifier,
-    onClearClick: () -> Unit = { },
-    onSaveAllClick: () -> Unit = { },
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-) {
-    CenterAlignedTopAppBar(
-        modifier = modifier,
-        title = { Text(text = stringResource(Strings.recordings)) },
-        actions = {
-            IconButton(onClick = onClearClick) {
-                Icon(
-                    painter = painterResource(Icons.ic_clear_all),
-                    contentDescription = null,
-                )
-            }
-
-            var showMenu by remember { mutableStateOf(false) }
-            IconButton(onClick = { showMenu = !showMenu }) {
-                Icon(
-                    painter = painterResource(Icons.ic_menu_overflow),
-                    contentDescription = null,
-                )
-            }
-            DropdownMenu(
-                expanded = showMenu,
-                onDismissRequest = { showMenu = false },
-            ) {
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(Strings.save_all_logs)) },
-                    onClick = onSaveAllClick,
-                )
-            }
-        },
-        scrollBehavior = scrollBehavior,
-    )
-}
-
-@Composable
-private fun RecordingsItems(
-    state: RecordingsViewState,
-    listener: RecordingsScreenListener,
-    contentPadding: PaddingValues,
-    modifier: Modifier = Modifier,
-) {
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = contentPadding,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        item {
-            RecordingControlsItem(
-                recordingState = state.recordingState,
-                onStartStopClick = listener.onStartStopClick,
-                onPauseResumeClick = listener.onPauseResumeClick,
+        recordingPendingDeletion?.let { item ->
+            ConfirmationDialog(
+                title = stringResource(Strings.delete),
+                message = stringResource(Strings.delete_warning),
+                onConfirm = {
+                    listener.onRecordingDeleteClick(item)
+                    recordingPendingDeletion = null
+                },
+                onDismiss = { recordingPendingDeletion = null },
             )
         }
 
-        if (state.recordings.isEmpty()) {
-            item {
-                ListPlaceholder(
-                    modifier = Modifier
-                        .animateItem(placementSpec = null)
-                        .padding(vertical = 20.dp),
-                    iconResId = Icons.ic_recording,
-                    text = { Text(text = stringResource(Strings.no_recordings)) },
-                )
-            }
-        }
-
-        itemsIndexed(
-            items = state.recordings,
-            key = { _, item -> item.recordingId },
-        ) { index, item ->
-            RecordingItem(
-                modifier = Modifier.animateItem(),
-                item = item,
-                onRecordingClick = listener.onRecordingClick,
-                onRecordingDeleteClick = listener.onRecordingDeleteClick,
+        if (showClearConfirmation) {
+            ConfirmationDialog(
+                title = stringResource(Strings.clear),
+                message = stringResource(Strings.clear_warning),
+                onConfirm = {
+                    listener.onClearClick()
+                    showClearConfirmation = false
+                },
+                onDismiss = { showClearConfirmation = false },
             )
-
-            if (index != state.recordings.lastIndex) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(
-                        start = 80.dp,
-                        end = 10.dp,
-                    ),
-                )
-            }
         }
     }
 }
@@ -191,55 +199,136 @@ private fun RecordingItem(
     onRecordingClick: (LogRecordingItem) -> Unit = { },
     onRecordingDeleteClick: (LogRecordingItem) -> Unit = { },
 ) {
-    Row(
+    Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .clickable { onRecordingClick(item) }
-            .padding(
-                vertical = 10.dp,
-                horizontal = 10.dp,
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+            .padding(horizontal = 12.dp)
+            .padding(bottom = 12.dp),
+        onClick = { onRecordingClick(item) },
     ) {
-        Icon(
+        Row(
             modifier = Modifier
-                .size(60.dp)
-                .padding(15.dp),
-            painter = painterResource(Icons.ic_recording),
-            contentDescription = null,
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
-        ) {
-            Text(
-                text = item.title,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-
-            Text(
-                text = item.formattedDate,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-
-        IconButton(
-            onClick = { onRecordingDeleteClick(item) },
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Icon(
-                painter = painterResource(Icons.ic_delete),
-                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(40.dp),
+                painter = painterResource(Icons.ic_recording),
                 contentDescription = null,
+            )
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = item.title,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                Text(
+                    text = item.formattedDate,
+                    style = MiuixTheme.textStyles.footnote1,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            IconButton(onClick = { onRecordingDeleteClick(item) }) {
+                Icon(
+                    imageVector = MiuixIcons.Delete,
+                    tint = MiuixTheme.colorScheme.error,
+                    contentDescription = stringResource(Strings.delete),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Dropdown anchored to the top end of the screen - the Miuix replacement of the Material3
+ * `DropdownMenu`. It must stay a sibling of the `LazyColumn` inside the `Scaffold`.
+ */
+@Composable
+private fun AnchorDropdownMenu(
+    items: List<DropdownItem>,
+    onDismissFinished: () -> Unit,
+    show: Boolean = true,
+) {
+    var visible by remember(show) { mutableStateOf(show) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(0.dp),
+        )
+
+        OverlayListPopup(
+            show = visible,
+            popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+            alignment = PopupPositionProvider.Align.TopEnd,
+            onDismissRequest = {
+                visible = false
+                onDismissFinished()
+            },
+            onDismissFinished = onDismissFinished,
+        ) {
+            ListPopupColumn {
+                items.forEachIndexed { index, item ->
+                    DropdownImpl(
+                        item = item,
+                        optionSize = items.size,
+                        isSelected = false,
+                        index = index,
+                        onSelectedIndexChange = {
+                            visible = false
+                            onDismissFinished()
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Two button confirmation dialog - the Miuix replacement of the old `MaterialAlertDialogBuilder`. */
+@Composable
+private fun ConfirmationDialog(
+    title: String,
+    message: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    OverlayDialog(
+        show = true,
+        title = title,
+        summary = message,
+        onDismissRequest = onDismiss,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            TextButton(
+                text = stringResource(Strings.no),
+                onClick = onDismiss,
+                modifier = Modifier.weight(1f),
+            )
+
+            TextButton(
+                text = stringResource(Strings.yes),
+                onClick = onConfirm,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.textButtonColorsPrimary(),
             )
         }
     }

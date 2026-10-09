@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +20,9 @@ import com.f0x1d.logfox.compose.base.preview.DayNightPreview
 import com.f0x1d.logfox.compose.designsystem.Icons
 import com.f0x1d.logfox.compose.designsystem.theme.LogFoxTheme
 import com.f0x1d.logfox.feature.strings.Strings
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun ListPlaceholder(
@@ -40,7 +39,7 @@ fun ListPlaceholder(
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                .background(MiuixTheme.colorScheme.surfaceContainerHighest)
                 .padding(26.dp),
         ) {
             Icon(
@@ -50,9 +49,7 @@ fun ListPlaceholder(
             )
         }
 
-        ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
-            text()
-        }
+        text()
     }
 }
 
@@ -62,7 +59,11 @@ private fun Preview() = LogFoxTheme {
     ListPlaceholder(
         iconResId = Icons.ic_recording,
         text = {
-            Text(text = stringResource(Strings.no_crashes))
+            Text(
+                text = stringResource(Strings.no_crashes),
+                style = MiuixTheme.textStyles.body1,
+                color = MiuixTheme.colorScheme.onBackgroundVariant,
+            )
         },
     )
 }

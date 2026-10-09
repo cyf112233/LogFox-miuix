@@ -1,28 +1,22 @@
 package com.f0x1d.logfox.feature.preferences.presentation.menu.ui
 
-import android.os.Bundle
-import android.view.View
+import androidx.compose.runtime.Composable
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.preference.Preference
-import com.f0x1d.logfox.core.context.isHorizontalOrientation
 import com.f0x1d.logfox.core.context.shareFileIntent
-import com.f0x1d.logfox.core.tea.BaseStorePreferenceFragment
+import com.f0x1d.logfox.core.tea.BaseStoreComposeFragment
 import com.f0x1d.logfox.feature.navigation.api.Directions
-import com.f0x1d.logfox.feature.preferences.presentation.R
 import com.f0x1d.logfox.feature.preferences.presentation.menu.PreferencesMenuCommand
 import com.f0x1d.logfox.feature.preferences.presentation.menu.PreferencesMenuSideEffect
 import com.f0x1d.logfox.feature.preferences.presentation.menu.PreferencesMenuState
 import com.f0x1d.logfox.feature.preferences.presentation.menu.PreferencesMenuViewModel
 import com.f0x1d.logfox.feature.preferences.presentation.menu.PreferencesMenuViewState
-import com.f0x1d.logfox.feature.strings.Strings
-import com.google.android.material.appbar.MaterialToolbar
+import com.f0x1d.logfox.feature.preferences.presentation.menu.ui.compose.PreferencesMenuScreenContent
 import dagger.hilt.android.AndroidEntryPoint
-import dev.chrisbanes.insetter.applyInsetter
 
 @AndroidEntryPoint
 internal class PreferencesMenuFragment :
-    BaseStorePreferenceFragment<
+    BaseStoreComposeFragment<
         PreferencesMenuViewState,
         PreferencesMenuState,
         PreferencesMenuCommand,
@@ -32,60 +26,18 @@ internal class PreferencesMenuFragment :
 
     override val viewModel by viewModels<PreferencesMenuViewModel>()
 
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        addPreferencesFromResource(R.xml.settings_menu)
-
-        findPreference<Preference>("pref_settings_ui")?.setOnPreferenceClickListener {
-            send(PreferencesMenuCommand.UISettingsClicked)
-            true
-        }
-        findPreference<Preference>("pref_settings_service")?.setOnPreferenceClickListener {
-            send(PreferencesMenuCommand.ServiceSettingsClicked)
-            true
-        }
-        findPreference<Preference>("pref_settings_crashes")?.setOnPreferenceClickListener {
-            send(PreferencesMenuCommand.CrashesSettingsClicked)
-            true
-        }
-        findPreference<Preference>("pref_settings_notifications")?.setOnPreferenceClickListener {
+    @Composable
+    override fun Content(state: PreferencesMenuViewState) = PreferencesMenuScreenContent(
+        state = state,
+        onUISettingsClick = { send(PreferencesMenuCommand.UISettingsClicked) },
+        onServiceSettingsClick = { send(PreferencesMenuCommand.ServiceSettingsClicked) },
+        onCrashesSettingsClick = { send(PreferencesMenuCommand.CrashesSettingsClicked) },
+        onNotificationsSettingsClick = {
             send(PreferencesMenuCommand.NotificationsSettingsClicked)
-            true
-        }
-        findPreference<Preference>("pref_settings_links")?.setOnPreferenceClickListener {
-            send(PreferencesMenuCommand.LinksClicked)
-            true
-        }
-        findPreference<Preference>("pref_settings_share_logs")?.setOnPreferenceClickListener {
-            send(PreferencesMenuCommand.ShareLogsClicked)
-            true
-        }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        view.findViewById<MaterialToolbar>(R.id.toolbar)?.apply {
-            setTitle(Strings.settings)
-        }
-
-        listView?.apply {
-            clipToPadding = false
-            applyInsetter {
-                type(navigationBars = true) {
-                    padding(vertical = requireContext().isHorizontalOrientation)
-                }
-            }
-        }
-    }
-
-    override fun render(state: PreferencesMenuViewState) {
-        findPreference<Preference>("pref_settings_app_version")?.apply {
-            title = "${state.versionName} (${state.versionCode})"
-        }
-        findPreference<Preference>("pref_settings_share_logs")?.apply {
-            isVisible = state.isDebug
-        }
-    }
+        },
+        onLinksClick = { send(PreferencesMenuCommand.LinksClicked) },
+        onShareLogsClick = { send(PreferencesMenuCommand.ShareLogsClicked) },
+    )
 
     override fun handleSideEffect(sideEffect: PreferencesMenuSideEffect) {
         when (sideEffect) {

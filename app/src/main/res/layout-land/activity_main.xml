@@ -14,16 +14,12 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/navigation_rail"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:layout="@layout/fragment_logs" />
+        app:layout_constraintBottom_toBottomOf="parent" />
 
-    <com.f0x1d.logfox.core.ui.view.CustomApplyInsetsNavigationRailView
+    <androidx.compose.ui.platform.ComposeView
         android:id="@+id/navigation_rail"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        app:itemTextAppearanceActive="@style/TextAppearance.LogFox.BottomNavigationView.Title"
-        app:itemTextAppearanceInactive="@style/TextAppearance.LogFox.BottomNavigationView.Title"
-        app:menu="@menu/main_menu"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/nav_host_fragment_content_main"

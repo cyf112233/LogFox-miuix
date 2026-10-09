@@ -14,16 +14,12 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
-        tools:layout="@layout/fragment_logs" />
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
+    <androidx.compose.ui.platform.ComposeView
         android:id="@+id/bottom_navigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:itemTextAppearanceActive="@style/TextAppearance.LogFox.BottomNavigationView.Title"
-        app:itemTextAppearanceInactive="@style/TextAppearance.LogFox.BottomNavigationView.Title"
-        app:menu="@menu/main_menu"
         app:layout_constraintTop_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

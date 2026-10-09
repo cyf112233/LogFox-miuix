@@ -2,12 +2,12 @@
 
 ## Project Overview
 
-LogFox is an Android LogCat reader supporting Shizuku, root, and ADB access. It monitors logs, detects crashes (Java/JNI/ANR), records log sessions, and supports powerful filtering. Built with Material You design.
+LogFox is an Android LogCat reader supporting Shizuku, root, and ADB access. It monitors logs, detects crashes (Java/JNI/ANR), records log sessions, and supports powerful filtering. Built with Miuix (Xiaomi HyperOS design language).
 
 ## Tech Stack
 
 - Kotlin, Coroutines/Flow, Hilt (DI), Room (DB), Navigation Component (fragments)
-- Compose for newer UI, Fragments + XML for existing features
+- Compose + **Miuix 0.9.4** (`top.yukonga.miuix.kmp`) for all UI; Fragments are thin containers hosting a `ComposeView`
 - Shizuku + libsu for privileged system access
 - Roborazzi for snapshot testing
 
@@ -50,6 +50,28 @@ feature/<name>/
 
 - **Container** (Fragment): owns ViewModel lifecycle, collects state/side effects, handles navigation
 - **Passive views/composables**: render ViewState, expose callbacks, no business logic
+
+#### Miuix conventions
+
+All UI is Miuix — **never import `androidx.compose.material3`**. See `docs/miuix-migration.md` for the
+full contract; the essentials:
+
+- Theme: single entry point `LogFoxTheme` (`core/ui/compose/design-system`), which wraps `MiuixTheme`
+  with a `ThemeController` (system/light/dark, Monet when available). Never nest another theme.
+- Colors/text styles only from `MiuixTheme.colorScheme` / `MiuixTheme.textStyles`.
+- Icons: `MiuixIcons.<Name>` from `top.yukonga.miuix.kmp.icon.extended.<Name>` — each icon needs its own
+  import (they are extension properties). Project-specific drawables go through `painterResource`.
+- Page skeleton: `Scaffold` + `TopAppBar`/`SmallTopAppBar` (with `MiuixScrollBehavior`) + `LazyColumn`
+  (`overScrollVertical()` + `scrollEndHaptic()` + `nestedScroll(behavior.nestedScrollConnection)`,
+  `overscrollEffect = null`, `contentPadding` from `paddingValues.calculateTopPadding()`).
+- Grouped lists/settings: `SmallTitle` + `Card(Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp))`
+  + `XxxPreference` rows, with `HorizontalDivider(Modifier.fillMaxWidth().padding(horizontal = 16.dp))`
+  between rows. Reuse `SettingsScreen` / `settingsGroup` / `PreferenceDivider` from
+  `feature/preferences/presentation`.
+- Dialogs/dropdowns (`Overlay*`) must live inside a `Scaffold` composition — pass them through a slot
+  (e.g. `SettingsScreen(overlays = { … })`) rather than as a sibling of the screen composable.
+- TEA screens extend `BaseStoreComposeFragment` (`core/tea/android`) and implement `Content(state)` plus
+  `handleSideEffect(...)`; the stateless composable belongs in `ui/compose/XxxScreenContent.kt`.
 
 ## Gradle & Dependencies
 

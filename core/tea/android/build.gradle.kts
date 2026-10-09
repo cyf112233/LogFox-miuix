@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.logfox.android.library)
     alias(libs.plugins.logfox.android.compose)
+    alias(libs.plugins.logfox.android.hilt)
 }
 
 android {
@@ -19,6 +20,7 @@ dependencies {
     api(libs.androidx.preference)
     api(libs.material)
 
-    implementation(projects.core.ui.base)
+    api(projects.core.ui.base)
+    api(projects.core.ui.compose.designSystem)
     implementation(libs.androidx.compose.runtime)
 }

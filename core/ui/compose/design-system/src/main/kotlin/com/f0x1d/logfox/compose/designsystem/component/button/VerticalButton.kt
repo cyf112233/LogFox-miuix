@@ -4,24 +4,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.f0x1d.logfox.compose.base.preview.DayNightPreview
 import com.f0x1d.logfox.compose.designsystem.Icons
 import com.f0x1d.logfox.compose.designsystem.theme.LogFoxTheme
 import com.f0x1d.logfox.feature.strings.Strings
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.Text
 
 @Composable
 fun VerticalButton(
@@ -30,13 +25,10 @@ fun VerticalButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = CardDefaults.shape,
 ) {
     Card(
         modifier = modifier,
-        onClick = onClick,
-        enabled = enabled,
-        shape = shape,
+        onClick = onClick.takeIf { enabled },
     ) {
         Column(
             modifier = Modifier
@@ -46,14 +38,7 @@ fun VerticalButton(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             icon()
-
-            ProvideTextStyle(
-                value = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.Medium,
-                ),
-            ) {
-                text()
-            }
+            text()
         }
     }
 }

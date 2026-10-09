@@ -7,6 +7,7 @@ android.namespace = "com.f0x1d.logfox.compose.designsystem"
 
 dependencies {
     api(projects.core.ui.compose.base)
+    api(projects.core.ui.icons)
 
     implementation(projects.strings)
 

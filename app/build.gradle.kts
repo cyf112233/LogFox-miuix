@@ -2,6 +2,7 @@ import com.android.build.api.variant.impl.VariantOutputImpl
 
 plugins {
     alias(libs.plugins.logfox.android.application)
+    alias(libs.plugins.logfox.android.compose)
     alias(libs.plugins.logfox.android.hilt)
 }
 
@@ -40,7 +41,6 @@ dependencies {
     implementation(projects.strings)
     implementation(projects.core.tea.android)
     implementation(projects.core.ui.base)
-    implementation(projects.core.ui.preference)
     implementation(projects.core.ui.icons)
     implementation(projects.core.ui.compose.fragment)
     implementation(projects.core.ui.glide)

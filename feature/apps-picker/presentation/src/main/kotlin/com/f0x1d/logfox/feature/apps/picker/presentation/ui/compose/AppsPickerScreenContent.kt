@@ -1,50 +1,55 @@
 package com.f0x1d.logfox.feature.apps.picker.presentation.ui.compose
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.f0x1d.logfox.compose.base.preview.DayNightPreview
 import com.f0x1d.logfox.compose.designsystem.component.button.NavigationBackButton
-import com.f0x1d.logfox.compose.designsystem.component.search.TopSearchBar
 import com.f0x1d.logfox.compose.designsystem.theme.LogFoxTheme
 import com.f0x1d.logfox.feature.apps.picker.api.InstalledApp
 import com.f0x1d.logfox.feature.apps.picker.presentation.AppsPickerViewState
 import com.f0x1d.logfox.feature.apps.picker.presentation.ui.AppsPickerScreenListener
 import com.f0x1d.logfox.feature.apps.picker.presentation.ui.MockAppsPickerScreenListener
 import com.f0x1d.logfox.feature.strings.Strings
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Checkbox
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
+import top.yukonga.miuix.kmp.basic.InputField
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SmallTopAppBar
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Search
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 internal fun AppsPickerScreenContent(
@@ -54,75 +59,72 @@ internal fun AppsPickerScreenContent(
     CompositionLocalProvider(
         LocalMultiplySelectionEnabled provides state.multiplySelectionEnabled,
     ) {
+        val scrollBehavior = MiuixScrollBehavior()
+
         Scaffold(
             topBar = {
-                AppsSearchBar(
-                    state = state,
-                    listener = listener,
+                SmallTopAppBar(
+                    title = state.topBarTitle,
+                    navigationIcon = {
+                        NavigationBackButton(onClick = listener.onBackClicked)
+                    },
+                    actions = {
+                        IconButton(onClick = { listener.onSearchActiveChanged(true) }) {
+                            Icon(imageVector = MiuixIcons.Search, contentDescription = null)
+                        }
+                    },
+                    scrollBehavior = scrollBehavior,
                 )
             },
         ) { paddingValues ->
-            if (state.isLoading) {
-                LoadingContent(modifier = Modifier.padding(paddingValues))
-            } else {
-                AppsContent(
-                    items = state.apps,
-                    checkedItems = state.checkedAppPackageNames,
-                    listener = listener,
-                    contentPadding = paddingValues,
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = paddingValues.calculateTopPadding()),
+            ) {
+                if (state.searchActive) {
+                    InputField(
+                        query = state.query,
+                        onQueryChange = listener.onQueryChanged,
+                        onSearch = { },
+                        expanded = true,
+                        onExpandedChange = { },
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        label = stringResource(Strings.search),
+                    )
+                }
+
+                if (state.isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        InfiniteProgressIndicator()
+                    }
+                } else {
+                    AppsContent(
+                        items = if (state.searchActive) state.searchedApps else state.apps,
+                        checkedItems = state.checkedAppPackageNames,
+                        listener = listener,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .overScrollVertical()
+                            .scrollEndHaptic()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        contentPadding = PaddingValues(
+                            bottom = paddingValues.calculateBottomPadding(),
+                        ),
+                    )
+                }
             }
         }
 
         BackHandler(
             enabled = state.searchActive,
-            onBack = listener.onBackClicked,
+            onBack = { listener.onSearchActiveChanged(false) },
         )
-    }
-}
-
-@Composable
-private fun AppsSearchBar(
-    state: AppsPickerViewState,
-    listener: AppsPickerScreenListener,
-    modifier: Modifier = Modifier,
-) {
-    TopSearchBar(
-        modifier = modifier,
-        query = state.query,
-        onQueryChange = listener.onQueryChanged,
-        onSearch = { /* noop */ },
-        active = state.searchActive,
-        onActiveChange = listener.onSearchActiveChanged,
-        placeholder = {
-            Text(
-                text = if (state.searchActive) {
-                    stringResource(id = Strings.apps)
-                } else {
-                    state.topBarTitle
-                },
-            )
-        },
-        leadingIcon = { NavigationBackButton(onClick = listener.onBackClicked) },
-    ) {
-        AppsContent(
-            items = state.searchedApps,
-            checkedItems = state.checkedAppPackageNames,
-            listener = listener,
-            contentPadding = WindowInsets.navigationBars
-                .union(WindowInsets.ime)
-                .asPaddingValues(),
-        )
-    }
-}
-
-@Composable
-private fun LoadingContent(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator()
     }
 }
 
@@ -135,32 +137,29 @@ private fun AppsContent(
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
         contentPadding = contentPadding,
+        overscrollEffect = null,
     ) {
-        itemsIndexed(
+        item { Spacer(modifier = Modifier.size(12.dp)) }
+
+        items(
             items = items,
-            key = { _, item -> item.id },
-            contentType = { _, item -> item.javaClass },
-        ) { index, item ->
-            Column(modifier = Modifier.animateItem()) {
+            key = { item -> item.id },
+        ) { item ->
+            Card(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .padding(bottom = 12.dp),
+            ) {
                 AppContent(
                     item = item,
-                    isChecked = remember(checkedItems) {
+                    isChecked = remember(checkedItems, item) {
                         item.packageName in checkedItems
                     },
                     onClick = listener.onAppClicked,
                     onChecked = listener.onAppChecked,
                 )
-
-                if (index != items.lastIndex) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(
-                            start = 80.dp,
-                            end = 10.dp,
-                        ),
-                    )
-                }
             }
         }
     }
@@ -174,49 +173,29 @@ internal fun AppContent(
     onChecked: (InstalledApp, Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(85.dp)
-            .clickable { onClick(item) }
-            .padding(horizontal = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        AsyncImage(
-            modifier = Modifier.size(60.dp),
-            model = item,
-            contentDescription = null,
-        )
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .height(60.dp),
-            verticalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+    BasicComponent(
+        modifier = modifier,
+        title = item.title,
+        summary = item.packageName,
+        startAction = {
+            AsyncImage(
+                modifier = Modifier.size(40.dp),
+                model = item,
+                contentDescription = null,
             )
-
-            Text(
-                text = item.packageName,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-
-        if (LocalMultiplySelectionEnabled.current) {
-            Checkbox(
-                checked = isChecked,
-                onCheckedChange = { onChecked(item, it) },
-            )
-        }
-    }
+        },
+        endActions = if (LocalMultiplySelectionEnabled.current) {
+            {
+                Checkbox(
+                    state = if (isChecked) ToggleableState.On else ToggleableState.Off,
+                    onClick = { onChecked(item, !isChecked) },
+                )
+            }
+        } else {
+            null
+        },
+        onClick = { onClick(item) },
+    )
 }
 
 internal val MockApps = listOf(

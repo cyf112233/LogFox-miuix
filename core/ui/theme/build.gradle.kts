@@ -8,7 +8,6 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.ui.preference)
 
     implementation(libs.viewpump)
 }

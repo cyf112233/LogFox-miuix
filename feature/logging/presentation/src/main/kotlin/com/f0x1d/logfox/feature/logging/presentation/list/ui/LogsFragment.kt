@@ -1,44 +1,30 @@
 package com.f0x1d.logfox.feature.logging.presentation.list.ui
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.Composable
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.f0x1d.logfox.core.context.isHorizontalOrientation
 import com.f0x1d.logfox.core.copy.copyText
-import com.f0x1d.logfox.core.tea.BaseStoreFragment
-import com.f0x1d.logfox.core.ui.icons.Icons
-import com.f0x1d.logfox.core.ui.view.invalidateNavigationButton
-import com.f0x1d.logfox.core.ui.view.setClickListenerOn
-import com.f0x1d.logfox.core.ui.view.setupCloseButton
-import com.f0x1d.logfox.feature.filters.api.model.UserFilter
-import com.f0x1d.logfox.feature.logging.presentation.R
-import com.f0x1d.logfox.feature.logging.presentation.databinding.FragmentLogsBinding
+import com.f0x1d.logfox.core.tea.BaseStoreComposeFragment
 import com.f0x1d.logfox.feature.logging.presentation.list.LogsCommand
 import com.f0x1d.logfox.feature.logging.presentation.list.LogsSideEffect
 import com.f0x1d.logfox.feature.logging.presentation.list.LogsState
 import com.f0x1d.logfox.feature.logging.presentation.list.LogsViewModel
 import com.f0x1d.logfox.feature.logging.presentation.list.LogsViewState
-import com.f0x1d.logfox.feature.logging.presentation.list.adapter.LogsAdapter
-import com.f0x1d.logfox.feature.logging.presentation.list.model.LogLineItem
 import com.f0x1d.logfox.feature.navigation.api.Directions
-import com.f0x1d.logfox.feature.strings.Plurals
 import com.f0x1d.logfox.feature.strings.Strings
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import dev.chrisbanes.insetter.applyInsetter
+import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 
 @AndroidEntryPoint
 internal class LogsFragment :
-    BaseStoreFragment<
-        FragmentLogsBinding,
+    BaseStoreComposeFragment<
         LogsViewState,
         LogsState,
         LogsCommand,
@@ -48,23 +34,12 @@ internal class LogsFragment :
 
     override val viewModel by viewModels<LogsViewModel>()
 
-    private val adapter by lazy {
-        LogsAdapter(
-            onClick = { item ->
-                send(LogsCommand.ItemClicked(item.logLineId))
-            },
-            onSelectClick = { item ->
-                send(LogsCommand.SelectLine(item.logLineId, true))
-            },
-            onCopyClick = { item ->
-                send(LogsCommand.CopyLog(item.logLineId))
-            },
-            onCreateFilterClick = { item ->
-                send(LogsCommand.CreateFilterFromLog(item.logLineId))
-            },
-        )
-    }
+    private val snackbarHostState = SnackbarHostState()
 
+    /**
+     * While lines are selected, a system back press clears the selection instead of leaving the
+     * screen - the same behaviour the toolbar close button has.
+     */
     private val clearSelectionOnBackPressedCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
             send(LogsCommand.ClearSelection)
@@ -83,114 +58,22 @@ internal class LogsFragment :
         it?.let { uri -> send(LogsCommand.SaveCurrentLogsTo(uri)) }
     }
 
-    override fun inflateBinding(inflater: LayoutInflater, container: ViewGroup?) = FragmentLogsBinding.inflate(inflater, container, false)
-
-    override fun FragmentLogsBinding.onViewCreated(view: View, savedInstanceState: Bundle?) {
-        requireContext().isHorizontalOrientation.also { horizontalOrientation ->
-            logsRecycler.applyInsetter {
-                type(navigationBars = true) {
-                    padding(vertical = horizontalOrientation)
-                }
-            }
-            scrollFab.applyInsetter {
-                type(navigationBars = true) {
-                    margin(vertical = horizontalOrientation)
-                }
-            }
-        }
-
-        toolbar.menu.apply {
-            setClickListenerOn(R.id.pause_item) {
-                send(LogsCommand.SwitchState)
-            }
-            setClickListenerOn(R.id.select_all_item) {
-                val visibleIds = adapter.currentList.mapTo(mutableSetOf()) { it.logLineId }
-                send(LogsCommand.SelectAll(visibleIds))
-            }
-            setClickListenerOn(R.id.search_item) {
-                send(LogsCommand.OpenSearch)
-            }
-            setClickListenerOn(R.id.filters_item) {
-                send(LogsCommand.OpenFiltersScreen)
-            }
-            setClickListenerOn(R.id.copy_selected_item) {
-                send(LogsCommand.CopySelectedLogs)
-            }
-            setClickListenerOn(R.id.extended_copy_selected_item) {
-                send(LogsCommand.OpenExtendedCopy)
-            }
-            setClickListenerOn(R.id.selected_to_recording_item) {
-                send(LogsCommand.SelectedToRecording)
-            }
-            setClickListenerOn(R.id.export_selected_item) {
-                send(LogsCommand.ExportSelectedClicked)
-            }
-            setClickListenerOn(R.id.save_current_log_item) {
-                send(LogsCommand.SaveCurrentLogsClicked)
-            }
-            setClickListenerOn(R.id.clear_item) {
-                send(LogsCommand.ClearLogs)
-            }
-            setClickListenerOn(R.id.restart_logging_item) {
-                send(LogsCommand.RestartLogging)
-            }
-            setClickListenerOn(R.id.exit_item) {
-                send(LogsCommand.KillService)
-            }
-        }
-
-        toolbar.setOnClickListener {
-            send(LogsCommand.ToolbarClicked)
-        }
-
-        logsRecycler.layoutManager = LinearLayoutManager(requireContext())
-        logsRecycler.itemAnimator = null
-        logsRecycler.recycledViewPool.setMaxRecycledViews(0, 50)
-        logsRecycler.adapter = adapter
-        logsRecycler.addOnScrollListener(
-            object : RecyclerView.OnScrollListener() {
-                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    if (viewModel.state.value.paused && !recyclerView.canScrollVertically(1)) {
-                        if (viewModel.state.value.resumeLoggingWithBottomTouch) {
-                            send(LogsCommand.Resume)
-                        }
-                    } else {
-                        send(LogsCommand.Pause)
-                    }
-                }
-            },
+    override fun onContentViewCreated(view: View, savedInstanceState: Bundle?) {
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            clearSelectionOnBackPressedCallback,
         )
-
-        scrollFab.setOnClickListener {
-            if (viewModel.state.value.resumeLoggingWithBottomTouch) {
-                send(LogsCommand.Resume)
-            } else {
-                scrollLogToBottom()
-            }
-        }
-
-        requireActivity().onBackPressedDispatcher.apply {
-            addCallback(viewLifecycleOwner, clearSelectionOnBackPressedCallback)
-        }
     }
 
-    override fun render(state: LogsViewState) {
-        binding.processQueryAndFilters(
-            query = state.query,
-            filters = state.filters,
-        )
-        binding.processSelectedItems(
-            selecting = state.selecting,
-            selectedCount = state.selectedCount,
-        )
-        binding.processPaused(paused = state.paused)
+    @Composable
+    override fun Content(state: LogsViewState) {
+        clearSelectionOnBackPressedCallback.isEnabled = state.selecting
 
-        if (state.logsChanged) {
-            binding.updateLogsList(
-                items = state.logs,
-                paused = state.paused,
-            )
-        }
+        LogsScreenContent(
+            state = state,
+            send = ::send,
+            snackbarHostState = snackbarHostState,
+        )
     }
 
     override fun handleSideEffect(sideEffect: LogsSideEffect) {
@@ -235,7 +118,9 @@ internal class LogsFragment :
 
             is LogsSideEffect.CopyText -> {
                 requireContext().copyText(sideEffect.text)
-                snackbar(Strings.text_copied)
+                viewLifecycleOwner.lifecycleScope.launch {
+                    snackbarHostState.showSnackbar(requireContext().getString(Strings.text_copied))
+                }
             }
 
             is LogsSideEffect.LaunchExportPicker -> {
@@ -248,138 +133,5 @@ internal class LogsFragment :
 
             else -> Unit
         }
-    }
-
-    private fun FragmentLogsBinding.processQueryAndFilters(
-        query: String?,
-        filters: List<UserFilter>,
-    ) {
-        val subtitle = buildString {
-            if (query != null) {
-                append(query)
-
-                if (filters.isNotEmpty()) {
-                    append(", ")
-                }
-            }
-
-            if (filters.isNotEmpty()) {
-                append(
-                    resources.getQuantityString(Plurals.filters_count, filters.size, filters.size),
-                )
-            }
-        }
-
-        toolbar.subtitle = subtitle
-        placeholderLayout.placeholderText.setText(
-            when {
-                subtitle.isEmpty() -> Strings.waiting_for_logs
-                else -> Strings.all_logs_were_filtered_out
-            },
-        )
-    }
-
-    private fun FragmentLogsBinding.processSelectedItems(
-        selecting: Boolean,
-        selectedCount: Int,
-    ) {
-        clearSelectionOnBackPressedCallback.isEnabled = selecting
-
-        setupToolbarForSelection(
-            selecting = selecting,
-            count = selectedCount,
-        )
-    }
-
-    private fun FragmentLogsBinding.processPaused(paused: Boolean) {
-        toolbar.menu.findItem(R.id.pause_item)
-            .setIcon(if (paused) Icons.ic_play else Icons.ic_pause)
-            .setTitle(if (paused) Strings.resume else Strings.pause)
-
-        if (paused) {
-            scrollFab.show()
-        } else {
-            scrollFab.hide()
-        }
-    }
-
-    private fun FragmentLogsBinding.setupToolbarForSelection(
-        selecting: Boolean,
-        count: Int,
-    ) = toolbar.apply {
-        val setVisibility = { itemId: Int, visible: Boolean ->
-            menu.findItem(itemId).isVisible = visible
-        }
-        val visibleDuringSelection = { itemId: Int -> setVisibility(itemId, selecting) }
-        val invisibleDuringSelection = { itemId: Int -> setVisibility(itemId, !selecting) }
-        val visibleOnlyInDefault = { itemId: Int ->
-            setVisibility(
-                itemId,
-                !selecting,
-            )
-        }
-
-        visibleOnlyInDefault(R.id.pause_item)
-        visibleDuringSelection(R.id.select_all_item)
-        invisibleDuringSelection(R.id.search_item)
-        invisibleDuringSelection(R.id.filters_item)
-        visibleDuringSelection(R.id.selected_item)
-        visibleOnlyInDefault(R.id.save_current_log_item)
-        visibleOnlyInDefault(R.id.clear_item)
-        visibleOnlyInDefault(R.id.restart_logging_item)
-        visibleOnlyInDefault(R.id.exit_item)
-
-        title = when {
-            selecting -> resources.getQuantityString(Plurals.selected_count, count, count)
-            else -> getString(Strings.app_name)
-        }
-
-        if (selecting) {
-            setupCloseButton()
-
-            setNavigationOnClickListener {
-                send(LogsCommand.ClearSelection)
-            }
-        } else {
-            invalidateNavigationButton()
-        }
-    }
-
-    private fun FragmentLogsBinding.updateLogsList(
-        items: List<LogLineItem>,
-        paused: Boolean,
-    ) {
-        placeholderLayout.root.apply {
-            if (items.isEmpty()) {
-                animate()
-                    .alpha(1f)
-                    .setStartDelay(1000)
-                    .setDuration(200)
-            } else {
-                animate().cancel()
-                alpha = 0f
-            }
-        }
-
-        val layoutManager = logsRecycler.layoutManager as LinearLayoutManager
-        val savedState = layoutManager.onSaveInstanceState()
-
-        adapter.submitList(null)
-        adapter.submitList(items) {
-            if (paused) {
-                layoutManager.onRestoreInstanceState(savedState)
-            } else {
-                scrollLogToBottom()
-            }
-        }
-    }
-
-    private fun FragmentLogsBinding.scrollLogToBottom() {
-        logsRecycler.stopScroll()
-        logsRecycler.scrollToPosition(adapter.itemCount - 1)
-    }
-
-    private fun snackbar(messageRes: Int) {
-        Snackbar.make(binding.root, messageRes, Snackbar.LENGTH_SHORT).show()
     }
 }
