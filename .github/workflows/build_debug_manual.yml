@@ -47,10 +47,12 @@ jobs:
           set -euxo pipefail
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
           sdkmanager --install "platform-tools" "build-tools;37.0.0"
-          # Miuix 0.9.4 requires compiling against API 37. Depending on the SDK channel it is
-          # published either as "platforms;android-37" or as a minor-versioned package.
-          sdkmanager --install "platforms;android-37" \
+          # Miuix 0.9.4 requires compiling against API 37. In the SDK repository API 37 is
+          # published as the minor-versioned package "platforms;android-37.0" (there is no
+          # plain "platforms;android-37"); fall back to the canary channel just in case.
+          sdkmanager --install "platforms;android-37.0" \
             || sdkmanager --channel=3 --install "platforms;android-37.0"
+          sdkmanager --list_installed | sed -n '1,40p'
 
       - name: Show toolchain versions
         run: |
