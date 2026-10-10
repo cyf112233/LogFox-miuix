@@ -2,7 +2,6 @@ package com.f0x1d.logfox.feature.recordings.presentation.list.ui.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,10 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.f0x1d.logfox.compose.base.preview.DayNightPreview
 import com.f0x1d.logfox.compose.designsystem.Icons
 import com.f0x1d.logfox.compose.designsystem.component.placeholder.ListPlaceholder
@@ -35,6 +31,7 @@ import com.f0x1d.logfox.feature.recordings.presentation.list.ui.RecordingsScreen
 import com.f0x1d.logfox.feature.recordings.api.data.RecordingState
 import com.f0x1d.logfox.feature.recordings.presentation.model.LogRecordingItem
 import com.f0x1d.logfox.feature.strings.Strings
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -90,7 +87,7 @@ internal fun RecordingsScreenContent(
                     IconButton(onClick = { showOverflowMenu = true }) {
                         Icon(
                             imageVector = MiuixIcons.More,
-                            contentDescription = stringResource(Strings.recordings),
+                            contentDescription = stringResource(Strings.more),
                         )
                     }
                 },
@@ -111,6 +108,8 @@ internal fun RecordingsScreenContent(
             ),
             overscrollEffect = null,
         ) {
+            item(key = "top_spacer") { Spacer(modifier = Modifier.size(12.dp)) }
+
             item(key = "controls") {
                 RecordingControlsItem(
                     modifier = Modifier.padding(horizontal = 12.dp),
@@ -204,50 +203,28 @@ private fun RecordingItem(
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .padding(bottom = 12.dp),
-        onClick = { onRecordingClick(item) },
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Icon(
-                modifier = Modifier.size(40.dp),
-                painter = painterResource(Icons.ic_recording),
-                contentDescription = null,
-            )
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(
-                    text = item.title,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-
-                Text(
-                    text = item.formattedDate,
-                    style = MiuixTheme.textStyles.footnote1,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-
-            IconButton(onClick = { onRecordingDeleteClick(item) }) {
+        BasicComponent(
+            title = item.title,
+            summary = item.formattedDate,
+            startAction = {
                 Icon(
-                    imageVector = MiuixIcons.Delete,
-                    tint = MiuixTheme.colorScheme.error,
-                    contentDescription = stringResource(Strings.delete),
+                    modifier = Modifier.size(40.dp),
+                    painter = painterResource(Icons.ic_recording),
+                    contentDescription = null,
                 )
-            }
-        }
+            },
+            endActions = {
+                IconButton(onClick = { onRecordingDeleteClick(item) }) {
+                    Icon(
+                        imageVector = MiuixIcons.Delete,
+                        tint = MiuixTheme.colorScheme.error,
+                        contentDescription = stringResource(Strings.delete),
+                    )
+                }
+            },
+            onClick = { onRecordingClick(item) },
+        )
     }
 }
 

@@ -29,6 +29,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.f0x1d.logfox.compose.designsystem.component.icon.AppIcon
+import com.f0x1d.logfox.compose.designsystem.component.search.TopSearchBar
 import com.f0x1d.logfox.core.ui.icons.Icons
 import com.f0x1d.logfox.feature.crashes.presentation.details.CrashDetailsViewState
 import com.f0x1d.logfox.feature.strings.Strings
@@ -39,7 +40,6 @@ import top.yukonga.miuix.kmp.basic.DropdownEntry
 import top.yukonga.miuix.kmp.basic.DropdownItem
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -116,12 +116,15 @@ internal fun CrashDetailsScreenContent(
                 title = crash?.appName ?: crash?.packageName.orEmpty(),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = MiuixIcons.Back, contentDescription = null)
+                        Icon(imageVector = MiuixIcons.Back, contentDescription = stringResource(Strings.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { searchExpanded = !searchExpanded }) {
-                        Icon(imageVector = MiuixIcons.Search, contentDescription = null)
+                        Icon(
+                            imageVector = MiuixIcons.Search,
+                            contentDescription = stringResource(Strings.search),
+                        )
                     }
                     OverlayIconDropdownMenu(
                         entries = listOf(
@@ -161,7 +164,7 @@ internal fun CrashDetailsScreenContent(
                             ),
                         ),
                     ) {
-                        Icon(imageVector = MiuixIcons.More, contentDescription = null)
+                        Icon(imageVector = MiuixIcons.More, contentDescription = stringResource(Strings.more))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -175,7 +178,7 @@ internal fun CrashDetailsScreenContent(
                 .padding(top = paddingValues.calculateTopPadding()),
         ) {
             if (searchExpanded) {
-                InputField(
+                TopSearchBar(
                     query = state.searchQuery,
                     onQueryChange = onSearchQueryChange,
                     onSearch = onSearchQueryChange,
@@ -183,7 +186,7 @@ internal fun CrashDetailsScreenContent(
                     onExpandedChange = { },
                     modifier = Modifier.padding(horizontal = 12.dp),
                     label = stringResource(Strings.search),
-                )
+                ) { }
             }
 
             LazyColumn(

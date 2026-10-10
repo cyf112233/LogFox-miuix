@@ -63,7 +63,7 @@ internal fun AppCrashesScreenContent(
                 title = state.appName ?: state.packageName,
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = MiuixIcons.Back, contentDescription = null)
+                        Icon(imageVector = MiuixIcons.Back, contentDescription = stringResource(Strings.back))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -122,7 +122,7 @@ internal fun AppCrashesScreenContent(
                                 IconButton(onClick = { crashToDelete = item }) {
                                     Icon(
                                         imageVector = MiuixIcons.Delete,
-                                        contentDescription = null,
+                                        contentDescription = stringResource(Strings.delete),
                                         tint = MiuixTheme.colorScheme.error,
                                     )
                                 }

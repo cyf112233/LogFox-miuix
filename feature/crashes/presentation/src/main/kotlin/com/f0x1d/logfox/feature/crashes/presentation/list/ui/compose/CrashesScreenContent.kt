@@ -99,7 +99,7 @@ internal fun CrashesScreenContent(
                             ),
                         ),
                     ) {
-                        Icon(imageVector = MiuixIcons.More, contentDescription = null)
+                        Icon(imageVector = MiuixIcons.More, contentDescription = stringResource(Strings.more))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -169,7 +169,7 @@ internal fun CrashesScreenContent(
                                     IconButton(onClick = { crashToDelete = item }) {
                                         Icon(
                                             imageVector = MiuixIcons.Delete,
-                                            contentDescription = null,
+                                            contentDescription = stringResource(Strings.delete),
                                             tint = MiuixTheme.colorScheme.error,
                                         )
                                     }
@@ -244,31 +244,32 @@ private fun SortDialog(
         onDismissRequest = onDismiss,
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            CrashesSort.entries.forEachIndexed { index, sort ->
-                if (index > 0) {
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+            Card(modifier = Modifier.fillMaxWidth()) {
+                CrashesSort.entries.forEachIndexed { index, sort ->
+                    if (index > 0) {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                        )
+                    }
+                    RadioButtonPreference(
+                        title = stringResource(sort.titleRes),
+                        selected = selectedSort == sort,
+                        onClick = { selectedSort = sort },
                     )
                 }
-                RadioButtonPreference(
-                    title = stringResource(sort.titleRes),
-                    selected = selectedSort == sort,
-                    onClick = { selectedSort = sort },
-                )
             }
 
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            )
-            SwitchPreference(
-                title = stringResource(Strings.in_reversed_order),
-                checked = reversed,
-                onCheckedChange = { reversed = it },
-            )
+            Spacer(modifier = Modifier.size(12.dp))
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                SwitchPreference(
+                    title = stringResource(Strings.in_reversed_order),
+                    checked = reversed,
+                    onCheckedChange = { reversed = it },
+                )
+            }
 
             Row(
                 modifier = Modifier

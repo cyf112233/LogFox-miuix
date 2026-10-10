@@ -22,6 +22,7 @@ import com.f0x1d.logfox.feature.preferences.presentation.rememberBooleanPreferen
 import com.f0x1d.logfox.feature.preferences.presentation.settingsGroup
 import com.f0x1d.logfox.feature.preferences.presentation.ui.settings.PreferencesUIViewState
 import com.f0x1d.logfox.feature.strings.Strings
+import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -334,12 +335,14 @@ private fun LogsFormatDialog(
         onDismissRequest = onDismiss,
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            labels.forEachIndexed { index, label ->
-                CheckboxPreference(
-                    title = label,
-                    checked = checked[index],
-                    onCheckedChange = { onChanged(index, it) },
-                )
+            Card(modifier = Modifier.fillMaxWidth()) {
+                labels.forEachIndexed { index, label ->
+                    CheckboxPreference(
+                        title = label,
+                        checked = checked[index],
+                        onCheckedChange = { onChanged(index, it) },
+                    )
+                }
             }
 
             Row(

@@ -6,6 +6,8 @@
     <string name="no_root">No root detected</string>
     <string name="text_copied">Text copied</string>
     <string name="search">Search</string>
+    <string name="back">Back</string>
+    <string name="more">More</string>
     <string name="clear">Clear</string>
     <string name="query">Query</string>
     <string name="logging_status">Logging status</string>

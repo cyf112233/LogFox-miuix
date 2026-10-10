@@ -26,6 +26,7 @@ import com.f0x1d.logfox.core.ui.icons.Icons
 import com.f0x1d.logfox.feature.filters.api.model.UserFilter
 import com.f0x1d.logfox.feature.filters.presentation.list.FiltersViewState
 import com.f0x1d.logfox.feature.strings.Strings
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownEntry
@@ -46,7 +47,6 @@ import top.yukonga.miuix.kmp.icon.extended.Delete
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.menu.OverlayIconDropdownMenu
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
-import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -76,7 +76,7 @@ internal fun FiltersScreenContent(
                 title = stringResource(Strings.filters),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = MiuixIcons.Back, contentDescription = null)
+                        Icon(imageVector = MiuixIcons.Back, contentDescription = stringResource(Strings.back))
                     }
                 },
                 actions = {
@@ -100,7 +100,7 @@ internal fun FiltersScreenContent(
                             ),
                         ),
                     ) {
-                        Icon(imageVector = MiuixIcons.More, contentDescription = null)
+                        Icon(imageVector = MiuixIcons.More, contentDescription = stringResource(Strings.more))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -108,7 +108,10 @@ internal fun FiltersScreenContent(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onCreateFilter) {
-                Icon(imageVector = MiuixIcons.Add, contentDescription = null)
+                Icon(
+                    imageVector = MiuixIcons.Add,
+                    contentDescription = stringResource(Strings.create_filter),
+                )
             }
         },
     ) { paddingValues ->
@@ -151,7 +154,7 @@ internal fun FiltersScreenContent(
                             .padding(horizontal = 12.dp)
                             .padding(bottom = 12.dp),
                     ) {
-                        ArrowPreference(
+                        BasicComponent(
                             title = filterTitle(filter),
                             summary = filterSummary(filter),
                             endActions = {
@@ -162,7 +165,7 @@ internal fun FiltersScreenContent(
                                 IconButton(onClick = { filterToDelete = filter }) {
                                     Icon(
                                         imageVector = MiuixIcons.Delete,
-                                        contentDescription = null,
+                                        contentDescription = stringResource(Strings.delete),
                                         tint = MiuixTheme.colorScheme.error,
                                     )
                                 }

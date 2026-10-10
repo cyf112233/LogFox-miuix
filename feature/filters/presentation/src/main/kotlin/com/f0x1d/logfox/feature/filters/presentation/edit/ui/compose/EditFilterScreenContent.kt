@@ -89,12 +89,12 @@ internal fun EditFilterScreenContent(
                     ?: stringResource(Strings.filter_name_hint),
                 navigationIcon = {
                     IconButton(onClick = onClose) {
-                        Icon(imageVector = MiuixIcons.Close, contentDescription = null)
+                        Icon(imageVector = MiuixIcons.Close, contentDescription = stringResource(Strings.close))
                     }
                 },
                 actions = {
                     IconButton(onClick = onSave) {
-                        Icon(imageVector = MiuixIcons.Ok, contentDescription = null)
+                        Icon(imageVector = MiuixIcons.Ok, contentDescription = stringResource(Strings.save))
                     }
                     OverlayIconDropdownMenu(
                         entries = listOf(
@@ -112,7 +112,7 @@ internal fun EditFilterScreenContent(
                             ),
                         ),
                     ) {
-                        Icon(imageVector = MiuixIcons.More, contentDescription = null)
+                        Icon(imageVector = MiuixIcons.More, contentDescription = stringResource(Strings.more))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -233,7 +233,7 @@ internal fun EditFilterScreenContent(
                             IconButton(onClick = onSelectApp) {
                                 Icon(
                                     painter = painterResource(Icons.ic_android),
-                                    contentDescription = null,
+                                    contentDescription = stringResource(Strings.select),
                                 )
                             }
                         },
@@ -286,12 +286,14 @@ internal fun EditFilterScreenContent(
                 onDismissRequest = { showLogLevelsDialog = false },
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    LogLevel.entries.forEachIndexed { index, level ->
-                        CheckboxPreference(
-                            title = level.name,
-                            checked = state.enabledLogLevels.getOrElse(index) { false },
-                            onCheckedChange = { onToggleLogLevel(index, it) },
-                        )
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        LogLevel.entries.forEachIndexed { index, level ->
+                            CheckboxPreference(
+                                title = level.name,
+                                checked = state.enabledLogLevels.getOrElse(index) { false },
+                                onCheckedChange = { onToggleLogLevel(index, it) },
+                            )
+                        }
                     }
 
                     Row(

@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.f0x1d.logfox.compose.base.preview.DayNightPreview
 import com.f0x1d.logfox.compose.designsystem.component.button.NavigationBackButton
+import com.f0x1d.logfox.compose.designsystem.component.search.TopSearchBar
 import com.f0x1d.logfox.compose.designsystem.theme.LogFoxTheme
 import com.f0x1d.logfox.feature.apps.picker.api.InstalledApp
 import com.f0x1d.logfox.feature.apps.picker.presentation.AppsPickerViewState
@@ -41,7 +42,6 @@ import top.yukonga.miuix.kmp.basic.Checkbox
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
-import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
@@ -70,7 +70,10 @@ internal fun AppsPickerScreenContent(
                     },
                     actions = {
                         IconButton(onClick = { listener.onSearchActiveChanged(true) }) {
-                            Icon(imageVector = MiuixIcons.Search, contentDescription = null)
+                            Icon(
+                                imageVector = MiuixIcons.Search,
+                                contentDescription = stringResource(Strings.search),
+                            )
                         }
                     },
                     scrollBehavior = scrollBehavior,
@@ -83,7 +86,7 @@ internal fun AppsPickerScreenContent(
                     .padding(top = paddingValues.calculateTopPadding()),
             ) {
                 if (state.searchActive) {
-                    InputField(
+                    TopSearchBar(
                         query = state.query,
                         onQueryChange = listener.onQueryChanged,
                         onSearch = { },
@@ -91,7 +94,7 @@ internal fun AppsPickerScreenContent(
                         onExpandedChange = { },
                         modifier = Modifier.padding(horizontal = 12.dp),
                         label = stringResource(Strings.search),
-                    )
+                    ) { }
                 }
 
                 if (state.isLoading) {

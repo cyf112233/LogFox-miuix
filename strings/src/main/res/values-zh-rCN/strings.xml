@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="back">返回</string>
+    <string name="more">更多</string>
     <string name="crashes">崩溃</string>
     <string name="pause">暂停</string>
     <string name="settings">设置</string>

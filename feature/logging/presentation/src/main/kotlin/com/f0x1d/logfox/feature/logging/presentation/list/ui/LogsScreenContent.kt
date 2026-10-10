@@ -1,7 +1,7 @@
 package com.f0x1d.logfox.feature.logging.presentation.list.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,11 +23,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -69,6 +66,7 @@ import top.yukonga.miuix.kmp.icon.extended.Play
 import top.yukonga.miuix.kmp.icon.extended.Search
 import top.yukonga.miuix.kmp.icon.extended.SelectAll
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
+import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -220,7 +218,7 @@ internal fun LogsScreenContent(
                         IconButton(onClick = { showLogsMenu = true }) {
                             Icon(
                                 imageVector = MiuixIcons.More,
-                                contentDescription = stringResource(Strings.app_name),
+                                contentDescription = stringResource(Strings.more),
                             )
                         }
                     }
@@ -393,21 +391,25 @@ private fun LogLineRow(
                     Color.Transparent
                 },
             )
-            // `detectTapGestures` handles the tap/long press but does not consume drags, so the
-            // vertical scroll of the parent list keeps working.
-            .pointerInput(item.logLineId, onLongClick) {
-                detectTapGestures(onLongPress = { onLongClick() })
-            }
-            .pointerInput(item.logLineId, onClick) {
-                detectTapGestures(onTap = { onClick() })
-            },
+            // `combinedClickable` handles the tap and the long press without consuming drags, so
+            // the vertical scroll of the parent list keeps working - and unlike the hand rolled
+            // `detectTapGestures` it also provides the Miuix press feedback.
+            .combinedClickable(
+                onLongClick = onLongClick,
+                onClick = onClick,
+            ),
         verticalAlignment = Alignment.Top,
     ) {
         Text(
             text = item.level.letter,
             modifier = Modifier
-                .clip(LevelBadgeShape)
-                .background(MiuixTheme.colorScheme.surfaceContainerHighest)
+                .squircleSurface(
+                    color = MiuixTheme.colorScheme.surfaceContainerHighest,
+                    topStart = 0.dp,
+                    topEnd = 6.dp,
+                    bottomEnd = 6.dp,
+                    bottomStart = 0.dp,
+                )
                 .padding(horizontal = 3.dp, vertical = 3.dp),
             fontSize = item.textSize.sp,
             fontWeight = FontWeight.Bold,
@@ -499,10 +501,3 @@ private fun LogLevel.levelColor(): Color = when (this) {
     LogLevel.DEBUG -> MiuixTheme.colorScheme.primaryVariant
     LogLevel.VERBOSE -> MiuixTheme.colorScheme.onSurfaceVariantSummary
 }
-
-private val LevelBadgeShape = RoundedCornerShape(
-    topStart = 0.dp,
-    topEnd = 6.dp,
-    bottomEnd = 6.dp,
-    bottomStart = 0.dp,
-)
