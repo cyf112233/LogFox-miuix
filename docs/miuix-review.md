@@ -200,6 +200,20 @@ skill `theme.md` 的 `ThemePaletteStyle`（`TonalSpot`/`Neutral`/`Vibrant`/`Expr
   排序/日志等级/日志格式三个弹窗的选择组包进 `Card`；崩溃详情与应用选择页统一用 `TopSearchBar`；
   所有纯图标按钮补 `contentDescription`（新增 `Strings.back` / `Strings.more`）。
 
+### ⚠️ 截图金标已失效（复查新增发现）
+
+`feature/setup/presentation/src/test/screenshots/*.png`（4 张）最后一次修改是 `7480c3a`
+（迁移前的 Material3 界面），而 Miuix 迁移提交 `cb8cd56` 把 `SetupScreenContent.kt` 改了 119 行，
+却没有重新录制金标。也就是说 CI 的 `run_tests.yml`（`./gradlew verifyRoborazziDebug`）
+在 master 上目前必然是红的；这 4 张图也不能代表当前界面（我据此判断 Setup 页时看到的是旧界面）。
+
+现在必须重新录制一次：
+
+```bash
+./gradlew recordRoborazziDebug --quiet
+git add feature/setup/presentation/src/test/screenshots
+```
+
 ### 仍未处理（下一批）
 
 * `SetupScreenContent` 仍是「三个按钮居中」，没有按 `scenario-onboarding.md` 的引导页结构重做。
