@@ -171,3 +171,39 @@ skill `theme.md` 的 `ThemePaletteStyle`（`TonalSpot`/`Neutral`/`Vibrant`/`Expr
 6. **观感细节**：squircle、`pressable`/`combinedClickable`、文本样式 token、首行呼吸位、
    空态整页居中、a11y 描述、`Card` 包单选组。
 7. **验证**：编译 + 单测 + 为关键屏补 Roborazzi 截图测试并人工核对截图。
+
+---
+
+## 修复进展
+
+| 批次 | 状态 | 提交 |
+| :-- | :-- | :-- |
+| 1. 主题层（P0-1 / P0-2 / P1-7 的接线部分） | ✅ 已完成 | `feat(theme): make the Monet switch real and put it in its own Theme group` |
+| 6. 观感细节（P1-2 / P1-3 / P1-4 + 搜索统一 P1-6） | ✅ 已完成 | `polish(ui): bring the screens closer to the Miuix reference look` |
+| 2. 全 Compose 壳（P0-6 / P0-4） | ⏳ 进行中 | 需 `navigation-compose`（已用 `javap` 核对 Miuix 侧 API、用 AndroidX 源码核对 `composable`/`navigation`/`dialog` 签名） |
+| 3. 弹层 Compose 化（P0-3） | ⏳ 待办 | 依赖批次 2（改由父屏或 `dialog()` 目的地承载 `OverlayBottomSheet`） |
+| 4. 偏好链路 state 化（P0-5） | ⏳ 待办 | 仓库键与 UI 层键同名，需把 4 个屏接回 ViewState |
+| 5. 组件下沉（P1-5） | ⏳ 待办 | `AnchorDropdownMenu` / `ConfirmDialog` / `DialogButtons` → design-system |
+
+**验证方式的变化**：构建机上没有 Android SDK 也没有算力跑 Gradle，所以本地不执行编译；
+改由 GitHub Actions 构建，代码侧用 `javap` 反查 Miuix `0.9.4` 真实签名、
+用 AndroidX 源码核对 `navigation-compose` 签名来替代编译器。
+
+### 已完成项的落地细节
+
+* **Monet**：`UISettingsRepository.monetEnabled()` 是唯一来源；
+  `ThemeSettingsProvider`（`core/ui/base`）以 `StateFlow` 暴露给 `LogFoxTheme`；
+  设置页由 `PreferencesUIViewState.monetEnabled` 驱动，切换即时生效（不再重建 Activity）；
+  删除了 Material 的 `DynamicColors`；底栏与页面共用同一份 Monet 状态。
+* **观感**：日志行改用 `combinedClickable`（有按压反馈）+ `squircleSurface` 徽章；
+  录像行/过滤器行改用 `BasicComponent`（去掉手写 17sp/SemiBold 文本样式与 `ArrowPreference` 误用）；
+  排序/日志等级/日志格式三个弹窗的选择组包进 `Card`；崩溃详情与应用选择页统一用 `TopSearchBar`；
+  所有纯图标按钮补 `contentDescription`（新增 `Strings.back` / `Strings.more`）。
+
+### 仍未处理（下一批）
+
+* `SetupScreenContent` 仍是「三个按钮居中」，没有按 `scenario-onboarding.md` 的引导页结构重做。
+* 空态（crashes / filters / appCrashes）用 `Modifier.padding(paddingValues)` 全量内边距。
+* `core/tests/screenshot` 模块没有任何截图测试，`recordRoborazziDebug` 不产出金标。
+* `AnchorDropdownMenu` / `ConfirmDialog` / `DialogButtons` 仍在 5 个文件里重复。
+
