@@ -57,9 +57,10 @@ All UI is Miuix — **never import `androidx.compose.material3`**. See `docs/miu
 full contract; the essentials:
 
 - Theme: single entry point `LogFoxTheme` (`core/ui/compose/design-system`), which wraps `MiuixTheme`
-  with a `ThemeController`. It renders Miuix' own color schemes by default; Monet (wallpaper) palettes
-  are opt-in via `monetEnabled`, read reactively from `ThemeSettingsProvider`, never from
-  `SharedPreferences` inside a composable. Never nest another theme.
+  with a `ThemeController`. It renders Miuix' own color schemes by default (`pref_monet_enabled` is
+  `false` out of the box); Monet (wallpaper) palettes are opt-in via `monetEnabled`, read reactively
+  from `ThemeSettingsProvider`, never from `SharedPreferences` inside a composable. Never nest
+  another theme.
 - Colors/text styles only from `MiuixTheme.colorScheme` / `MiuixTheme.textStyles`.
 - Icons: `MiuixIcons.<Name>` from `top.yukonga.miuix.kmp.icon.extended.<Name>` — each icon needs its own
   import (they are extension properties). Project-specific drawables go through `painterResource`.

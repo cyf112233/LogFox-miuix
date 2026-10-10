@@ -21,7 +21,8 @@ internal class UISettingsLocalDataSourceImpl @Inject constructor(
 
     override fun monetEnabled(): Preference<Boolean> = booleanPreference(
         key = KEY_MONET_ENABLED,
-        defaultValue = true,
+        // Off by default: the app looks like HyperOS out of the box, Monet is opt-in.
+        defaultValue = false,
     )
 
     private companion object {
