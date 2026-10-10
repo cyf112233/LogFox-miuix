@@ -15,6 +15,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -29,6 +30,7 @@ import com.f0x1d.logfox.core.compat.contrastedNavBarAvailable
 import com.f0x1d.logfox.core.compat.gesturesAvailable
 import com.f0x1d.logfox.core.context.hasNotificationsPermission
 import com.f0x1d.logfox.core.context.isHorizontalOrientation
+import com.f0x1d.logfox.core.ui.base.ThemeSettingsProvider
 import com.f0x1d.logfox.core.ui.base.activity.BaseActivity
 import com.f0x1d.logfox.core.ui.icons.Icons
 import com.f0x1d.logfox.databinding.ActivityMainBinding
@@ -41,7 +43,11 @@ import com.f0x1d.logfox.presentation.MainViewModel
 import com.f0x1d.logfox.presentation.MainViewState
 import com.f0x1d.logfox.presentation.ui.compose.MainNavigationBar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 
 @AndroidEntryPoint
 class MainActivity :
@@ -49,6 +55,12 @@ class MainActivity :
     NavController.OnDestinationChangedListener {
 
     private val viewModel by viewModels<MainViewModel>()
+
+    private val themeSettingsProvider: ThemeSettingsProvider by lazy {
+        EntryPointAccessors
+            .fromApplication<MainActivityEntryPoint>(applicationContext)
+            .themeSettingsProvider
+    }
 
     private val navController by lazy {
         val navHostFragment = supportFragmentManager.findFragmentById(
@@ -162,7 +174,9 @@ class MainActivity :
 
         bar.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         bar.setContent {
-            LogFoxTheme {
+            val monetEnabled by themeSettingsProvider.monetEnabled.collectAsStateWithLifecycle()
+
+            LogFoxTheme(monetEnabled = monetEnabled) {
                 MainNavigationBar(
                     currentDestinationId = selectedDestinationId,
                     landscape = landscape,
@@ -284,4 +298,10 @@ class MainActivity :
     }
 
     private val ActivityMainBinding.barView get() = bottomNavigation ?: navigationRail
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    internal interface MainActivityEntryPoint {
+        val themeSettingsProvider: ThemeSettingsProvider
+    }
 }

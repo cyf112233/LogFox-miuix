@@ -5,7 +5,7 @@ internal sealed interface PreferencesUICommand {
 
     data class NightThemeChanged(val themeIndex: Int) : PreferencesUICommand
 
-    data object MonetEnabledChanged : PreferencesUICommand
+    data class MonetEnabledChanged(val enabled: Boolean) : PreferencesUICommand
 
     data class DateFormatChanged(val format: String?) : PreferencesUICommand
 
@@ -22,6 +22,7 @@ internal sealed interface PreferencesUICommand {
     // Commands from effect handler
     data class PreferencesLoaded(
         val nightTheme: Int,
+        val monetEnabled: Boolean,
         val dateFormat: String,
         val timeFormat: String,
         val showLogDate: Boolean,

@@ -18,7 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.f0x1d.logfox.compose.designsystem.theme.LogFoxTheme
 import com.f0x1d.logfox.core.context.shareFileIntent
-import com.f0x1d.logfox.core.ui.base.DynamicColorAvailabilityProvider
+import com.f0x1d.logfox.core.ui.base.ThemeSettingsProvider
 import com.f0x1d.logfox.core.ui.base.ext.enableEdgeToEdge
 import com.f0x1d.logfox.feature.recordings.presentation.details.RecordingDetailsCommand
 import com.f0x1d.logfox.feature.recordings.presentation.details.RecordingDetailsSideEffect
@@ -42,10 +42,10 @@ internal class RecordingDetailsBottomSheetFragment : BottomSheetDialogFragment()
 
     private val viewModel by viewModels<RecordingDetailsViewModel>()
 
-    private val dynamicColorAvailabilityProvider: DynamicColorAvailabilityProvider by lazy {
+    private val themeSettingsProvider: ThemeSettingsProvider by lazy {
         EntryPointAccessors
             .fromApplication<RecordingDetailsBottomSheetFragmentEntryPoint>(requireContext())
-            .dynamicColorAvailabilityProvider
+            .themeSettingsProvider
     }
 
     private val zipLogLauncher = registerForActivityResult(
@@ -70,9 +70,9 @@ internal class RecordingDetailsBottomSheetFragment : BottomSheetDialogFragment()
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
         setContent {
-            LogFoxTheme(
-                dynamicColor = dynamicColorAvailabilityProvider.isDynamicColorAvailable(),
-            ) {
+            val monetEnabled by themeSettingsProvider.monetEnabled.collectAsStateWithLifecycle()
+
+            LogFoxTheme(monetEnabled = monetEnabled) {
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 RecordingDetailsScreenContent(
                     state = state,
@@ -127,6 +127,6 @@ internal class RecordingDetailsBottomSheetFragment : BottomSheetDialogFragment()
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     internal interface RecordingDetailsBottomSheetFragmentEntryPoint {
-        val dynamicColorAvailabilityProvider: DynamicColorAvailabilityProvider
+        val themeSettingsProvider: ThemeSettingsProvider
     }
 }

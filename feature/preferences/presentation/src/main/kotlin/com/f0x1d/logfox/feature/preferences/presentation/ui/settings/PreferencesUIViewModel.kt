@@ -14,6 +14,7 @@ import com.f0x1d.logfox.feature.preferences.api.domain.logs.GetShowLogTagUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.logs.GetShowLogTidUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.logs.GetShowLogTimeUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.logs.GetShowLogUidUseCase
+import com.f0x1d.logfox.feature.preferences.api.domain.ui.GetMonetEnabledUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.ui.GetNightThemeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -24,6 +25,7 @@ internal class PreferencesUIViewModel @Inject constructor(
     effectHandler: PreferencesUIEffectHandler,
     viewStateMapper: PreferencesUIViewStateMapper,
     getNightThemeUseCase: GetNightThemeUseCase,
+    getMonetEnabledUseCase: GetMonetEnabledUseCase,
     getDateFormatUseCase: GetDateFormatUseCase,
     getTimeFormatUseCase: GetTimeFormatUseCase,
     getShowLogDateUseCase: GetShowLogDateUseCase,
@@ -40,6 +42,7 @@ internal class PreferencesUIViewModel @Inject constructor(
 ) : BaseStoreViewModel<PreferencesUIViewState, PreferencesUIState, PreferencesUICommand, PreferencesUISideEffect>(
     initialState = PreferencesUIState(
         nightTheme = getNightThemeUseCase(),
+        monetEnabled = getMonetEnabledUseCase(),
         dateFormat = getDateFormatUseCase(),
         timeFormat = getTimeFormatUseCase(),
         showLogDate = getShowLogDateUseCase(),

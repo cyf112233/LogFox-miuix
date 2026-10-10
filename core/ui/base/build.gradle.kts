@@ -15,6 +15,8 @@ dependencies {
     api(projects.core.compat)
     api(projects.core.ui.theme)
 
+    api(libs.kotlinx.coroutines.core)
+
     implementation(libs.bundles.androidx)
     implementation(libs.material)
 

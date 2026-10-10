@@ -30,7 +30,9 @@ internal class PreferencesUIFragment :
         state = state,
         monetAvailable = monetAvailable,
         onNightThemeChanged = { send(PreferencesUICommand.NightThemeChanged(it)) },
-        onMonetEnabledChanged = { send(PreferencesUICommand.MonetEnabledChanged) },
+        onMonetEnabledChanged = { enabled ->
+            send(PreferencesUICommand.MonetEnabledChanged(enabled))
+        },
         onDateFormatChanged = { send(PreferencesUICommand.DateFormatChanged(it)) },
         onTimeFormatChanged = { send(PreferencesUICommand.TimeFormatChanged(it)) },
         onLogsFormatChanged = { which, checked ->

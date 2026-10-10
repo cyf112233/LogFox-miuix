@@ -8,6 +8,7 @@ internal class PreferencesUIViewStateMapper @Inject constructor() :
 
     override fun map(state: PreferencesUIState) = PreferencesUIViewState(
         nightTheme = state.nightTheme,
+        monetEnabled = state.monetEnabled,
         dateFormat = state.dateFormat,
         timeFormat = state.timeFormat,
         showLogDate = state.showLogDate,

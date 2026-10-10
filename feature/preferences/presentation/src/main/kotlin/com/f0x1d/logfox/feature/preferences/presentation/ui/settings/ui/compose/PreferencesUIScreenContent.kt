@@ -33,8 +33,6 @@ import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-private const val KEY_NIGHT_THEME = "pref_night_theme"
-private const val KEY_MONET_ENABLED = "pref_monet_enabled"
 private const val KEY_OPEN_CRASHES_ON_STARTUP = "pref_open_crashes_page_on_startup"
 private const val KEY_EXPORT_LOGS_IN_ORIGINAL_FORMAT = "pref_export_logs_in_original_format"
 private const val KEY_WRAP_CRASH_LOG_LINES = "pref_wrap_crash_log_lines"
@@ -62,7 +60,7 @@ internal fun PreferencesUIScreenContent(
     state: PreferencesUIViewState,
     monetAvailable: Boolean,
     onNightThemeChanged: (Int) -> Unit,
-    onMonetEnabledChanged: () -> Unit,
+    onMonetEnabledChanged: (Boolean) -> Unit,
     onDateFormatChanged: (String) -> Unit,
     onTimeFormatChanged: (String) -> Unit,
     onLogsFormatChanged: (Int, Boolean) -> Unit,
@@ -92,14 +90,14 @@ internal fun PreferencesUIScreenContent(
             )
         },
     ) {
-        settingsGroup({ stringResource(Strings.ui) }) {
+        settingsGroup({ stringResource(Strings.night_theme) }) {
             val themeItems = listOf(
                 stringResource(Strings.follow_system),
                 stringResource(Strings.light),
                 stringResource(Strings.dark),
             )
             OverlayDropdownPreference(
-                title = stringResource(Strings.night_theme),
+                title = stringResource(Strings.theme_mode),
                 items = themeItems,
                 selectedIndex = state.nightTheme.coerceAtLeast(NIGHT_THEME_DEFAULT),
                 onSelectedIndexChange = onNightThemeChanged,
@@ -108,14 +106,11 @@ internal fun PreferencesUIScreenContent(
             if (monetAvailable) {
                 PreferenceDivider()
 
-                val (monet, setMonet) = rememberBooleanPreference(KEY_MONET_ENABLED, true)
                 SwitchPreference(
                     title = stringResource(Strings.monet),
-                    checked = monet,
-                    onCheckedChange = { checked ->
-                        setMonet(checked)
-                        onMonetEnabledChanged()
-                    },
+                    summary = stringResource(Strings.monet_summary),
+                    checked = state.monetEnabled,
+                    onCheckedChange = onMonetEnabledChanged,
                 )
             }
         }

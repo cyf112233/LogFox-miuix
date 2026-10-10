@@ -15,7 +15,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.f0x1d.logfox.compose.designsystem.theme.LogFoxTheme
-import com.f0x1d.logfox.core.ui.base.DynamicColorAvailabilityProvider
+import com.f0x1d.logfox.core.ui.base.ThemeSettingsProvider
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -55,10 +55,10 @@ abstract class BaseStoreComposeFragment<
      */
     protected open fun onContentViewCreated(view: View, savedInstanceState: Bundle?) = Unit
 
-    private val dynamicColorAvailabilityProvider: DynamicColorAvailabilityProvider by lazy {
+    private val themeSettingsProvider: ThemeSettingsProvider by lazy {
         EntryPointAccessors
             .fromApplication<BaseStoreComposeFragmentEntryPoint>(requireContext())
-            .dynamicColorAvailabilityProvider
+            .themeSettingsProvider
     }
 
     override fun onCreateView(
@@ -70,9 +70,9 @@ abstract class BaseStoreComposeFragment<
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
         setContent {
-            LogFoxTheme(
-                dynamicColor = dynamicColorAvailabilityProvider.isDynamicColorAvailable(),
-            ) {
+            val monetEnabled by themeSettingsProvider.monetEnabled.collectAsStateWithLifecycle()
+
+            LogFoxTheme(monetEnabled = monetEnabled) {
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 Content(state)
             }
@@ -101,6 +101,6 @@ abstract class BaseStoreComposeFragment<
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     internal interface BaseStoreComposeFragmentEntryPoint {
-        val dynamicColorAvailabilityProvider: DynamicColorAvailabilityProvider
+        val themeSettingsProvider: ThemeSettingsProvider
     }
 }

@@ -16,7 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.f0x1d.logfox.compose.designsystem.theme.LogFoxTheme
-import com.f0x1d.logfox.core.ui.base.DynamicColorAvailabilityProvider
+import com.f0x1d.logfox.core.ui.base.ThemeSettingsProvider
 import com.f0x1d.logfox.core.ui.base.ext.enableEdgeToEdge
 import com.f0x1d.logfox.feature.logging.presentation.search.SearchLogsCommand
 import com.f0x1d.logfox.feature.logging.presentation.search.SearchLogsSideEffect
@@ -40,10 +40,10 @@ internal class SearchLogsBottomSheetFragment : BottomSheetDialogFragment() {
 
     private val viewModel by viewModels<SearchLogsViewModel>()
 
-    private val dynamicColorAvailabilityProvider: DynamicColorAvailabilityProvider by lazy {
+    private val themeSettingsProvider: ThemeSettingsProvider by lazy {
         EntryPointAccessors
             .fromApplication<SearchLogsBottomSheetFragmentEntryPoint>(requireContext())
-            .dynamicColorAvailabilityProvider
+            .themeSettingsProvider
     }
 
     override fun onCreateView(
@@ -55,9 +55,9 @@ internal class SearchLogsBottomSheetFragment : BottomSheetDialogFragment() {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
         setContent {
-            LogFoxTheme(
-                dynamicColor = dynamicColorAvailabilityProvider.isDynamicColorAvailable(),
-            ) {
+            val monetEnabled by themeSettingsProvider.monetEnabled.collectAsStateWithLifecycle()
+
+            LogFoxTheme(monetEnabled = monetEnabled) {
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 SearchLogsScreenContent(
                     state = state,
@@ -99,6 +99,6 @@ internal class SearchLogsBottomSheetFragment : BottomSheetDialogFragment() {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     internal interface SearchLogsBottomSheetFragmentEntryPoint {
-        val dynamicColorAvailabilityProvider: DynamicColorAvailabilityProvider
+        val themeSettingsProvider: ThemeSettingsProvider
     }
 }

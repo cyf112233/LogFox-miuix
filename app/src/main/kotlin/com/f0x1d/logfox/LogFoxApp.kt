@@ -12,8 +12,6 @@ import com.f0x1d.logfox.feature.notifications.api.LOGGING_STATUS_CHANNEL_ID
 import com.f0x1d.logfox.feature.notifications.api.RECORDING_STATUS_CHANNEL_ID
 import com.f0x1d.logfox.feature.preferences.api.data.UISettingsRepository
 import com.f0x1d.logfox.feature.strings.Strings
-import com.google.android.material.color.DynamicColors
-import com.google.android.material.color.DynamicColorsOptions
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 import javax.inject.Inject
@@ -39,13 +37,6 @@ class LogFoxApp : Application(), ImageLoaderFactory {
         Timber.d("onCreate")
 
         AppCompatDelegate.setDefaultNightMode(uiSettingsRepository.nightTheme().value)
-        DynamicColors.applyToActivitiesIfAvailable(
-            this,
-            DynamicColorsOptions
-                .Builder()
-                .setPrecondition { _, _ -> uiSettingsRepository.monetEnabled().value }
-                .build(),
-        )
 
         notificationManagerCompat.apply {
             val loggingStatusChannel =

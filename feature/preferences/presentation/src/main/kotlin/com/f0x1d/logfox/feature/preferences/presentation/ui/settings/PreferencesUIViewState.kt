@@ -2,6 +2,7 @@ package com.f0x1d.logfox.feature.preferences.presentation.ui.settings
 
 internal data class PreferencesUIViewState(
     val nightTheme: Int,
+    val monetEnabled: Boolean,
     val dateFormat: String,
     val timeFormat: String,
     val showLogDate: Boolean,

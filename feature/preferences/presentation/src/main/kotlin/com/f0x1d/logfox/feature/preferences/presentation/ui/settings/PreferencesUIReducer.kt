@@ -23,6 +23,7 @@ constructor() : Reducer<PreferencesUIState, PreferencesUICommand, PreferencesUIS
             state
                 .copy(
                     nightTheme = command.nightTheme,
+                    monetEnabled = command.monetEnabled,
                     dateFormat = command.dateFormat,
                     timeFormat = command.timeFormat,
                     showLogDate = command.showLogDate,
@@ -47,7 +48,9 @@ constructor() : Reducer<PreferencesUIState, PreferencesUICommand, PreferencesUIS
         }
 
         is PreferencesUICommand.MonetEnabledChanged -> {
-            state.withSideEffects(PreferencesUISideEffect.RecreateActivity)
+            state.copy(monetEnabled = command.enabled).withSideEffects(
+                PreferencesUISideEffect.SaveMonetEnabled(command.enabled),
+            )
         }
 
         is PreferencesUICommand.DateFormatChanged -> {

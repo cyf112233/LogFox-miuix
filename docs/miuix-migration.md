@@ -4,6 +4,12 @@ This file is the **single source of truth** for the migration. Follow it exactly
 your own layout numbers or APIs. Load the `miuix-ui` skill and read
 `references/scenarios.md` + `references/preferences.md` before writing code.
 
+Theme: `LogFoxTheme` (`core/ui/compose/design-system`) is the only theme entry point. It renders the
+Miuix color schemes (`ColorSchemeMode.Light` / `Dark`) unless the user enabled Monet in the theme
+settings — then `MonetLight` / `MonetDark`. `monetEnabled` is read from `ThemeSettingsProvider`
+(a flow, so the switch takes effect immediately) and must never be read from `SharedPreferences`
+inside a composable.
+
 Library: **miuix 0.9.4** (`top.yukonga.miuix.kmp`), already added to `gradle/libs.versions.toml`
 as the `miuix` bundle (`miuix-ui`, `miuix-preference`, `miuix-icons`) and applied automatically by
 the `logfox.android.compose` / `logfox.android.feature.compose` convention plugins.

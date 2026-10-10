@@ -71,8 +71,11 @@ import com.f0x1d.logfox.feature.preferences.api.domain.terminal.GetSelectedTermi
 import com.f0x1d.logfox.feature.preferences.api.domain.terminal.GetSelectedTerminalTypeUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.terminal.SetSelectedTerminalTypeUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.terminal.ShouldFallbackToDefaultTerminalUseCase
+import com.f0x1d.logfox.feature.preferences.api.domain.ui.GetMonetEnabledFlowUseCase
+import com.f0x1d.logfox.feature.preferences.api.domain.ui.GetMonetEnabledUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.ui.GetNightThemeFlowUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.ui.GetNightThemeUseCase
+import com.f0x1d.logfox.feature.preferences.api.domain.ui.SetMonetEnabledUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.ui.SetNightThemeUseCase
 import com.f0x1d.logfox.feature.preferences.impl.data.crashes.CrashesSettingsLocalDataSource
 import com.f0x1d.logfox.feature.preferences.impl.data.crashes.CrashesSettingsLocalDataSourceImpl
@@ -159,8 +162,11 @@ import com.f0x1d.logfox.feature.preferences.impl.domain.terminal.GetSelectedTerm
 import com.f0x1d.logfox.feature.preferences.impl.domain.terminal.GetSelectedTerminalTypeUseCaseImpl
 import com.f0x1d.logfox.feature.preferences.impl.domain.terminal.SetSelectedTerminalTypeUseCaseImpl
 import com.f0x1d.logfox.feature.preferences.impl.domain.terminal.ShouldFallbackToDefaultTerminalUseCaseImpl
+import com.f0x1d.logfox.feature.preferences.impl.domain.ui.GetMonetEnabledFlowUseCaseImpl
+import com.f0x1d.logfox.feature.preferences.impl.domain.ui.GetMonetEnabledUseCaseImpl
 import com.f0x1d.logfox.feature.preferences.impl.domain.ui.GetNightThemeFlowUseCaseImpl
 import com.f0x1d.logfox.feature.preferences.impl.domain.ui.GetNightThemeUseCaseImpl
+import com.f0x1d.logfox.feature.preferences.impl.domain.ui.SetMonetEnabledUseCaseImpl
 import com.f0x1d.logfox.feature.preferences.impl.domain.ui.SetNightThemeUseCaseImpl
 import dagger.Binds
 import dagger.Module
@@ -548,6 +554,21 @@ internal interface PreferencesModule {
     ): SetTimeFormatUseCase
 
     // UI Use Cases
+    @Binds
+    fun bindGetMonetEnabledUseCase(
+        impl: GetMonetEnabledUseCaseImpl,
+    ): GetMonetEnabledUseCase
+
+    @Binds
+    fun bindGetMonetEnabledFlowUseCase(
+        impl: GetMonetEnabledFlowUseCaseImpl,
+    ): GetMonetEnabledFlowUseCase
+
+    @Binds
+    fun bindSetMonetEnabledUseCase(
+        impl: SetMonetEnabledUseCaseImpl,
+    ): SetMonetEnabledUseCase
+
     @Binds
     fun bindGetNightThemeUseCase(
         impl: GetNightThemeUseCaseImpl,

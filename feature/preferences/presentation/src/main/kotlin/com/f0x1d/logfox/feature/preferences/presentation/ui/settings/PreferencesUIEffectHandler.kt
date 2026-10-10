@@ -28,7 +28,9 @@ import com.f0x1d.logfox.feature.preferences.api.domain.logs.SetShowLogTagUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.logs.SetShowLogTidUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.logs.SetShowLogTimeUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.logs.SetShowLogUidUseCase
+import com.f0x1d.logfox.feature.preferences.api.domain.ui.GetMonetEnabledFlowUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.ui.GetNightThemeFlowUseCase
+import com.f0x1d.logfox.feature.preferences.api.domain.ui.SetMonetEnabledUseCase
 import com.f0x1d.logfox.feature.preferences.api.domain.ui.SetNightThemeUseCase
 import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
@@ -36,6 +38,8 @@ import javax.inject.Inject
 internal class PreferencesUIEffectHandler @Inject constructor(
     private val getNightThemeFlowUseCase: GetNightThemeFlowUseCase,
     private val setNightThemeUseCase: SetNightThemeUseCase,
+    private val getMonetEnabledFlowUseCase: GetMonetEnabledFlowUseCase,
+    private val setMonetEnabledUseCase: SetMonetEnabledUseCase,
     private val getDateFormatFlowUseCase: GetDateFormatFlowUseCase,
     private val setDateFormatUseCase: SetDateFormatUseCase,
     private val getTimeFormatFlowUseCase: GetTimeFormatFlowUseCase,
@@ -73,10 +77,16 @@ internal class PreferencesUIEffectHandler @Inject constructor(
                 combine(
                     combine(
                         getNightThemeFlowUseCase(),
+                        getMonetEnabledFlowUseCase(),
                         getDateFormatFlowUseCase(),
                         getTimeFormatFlowUseCase(),
-                    ) { nightTheme, dateFormat, timeFormat ->
-                        Triple(nightTheme, dateFormat, timeFormat)
+                    ) { nightTheme, monetEnabled, dateFormat, timeFormat ->
+                        UiThemePreferences(
+                            nightTheme = nightTheme,
+                            monetEnabled = monetEnabled,
+                            dateFormat = dateFormat,
+                            timeFormat = timeFormat,
+                        )
                     },
                     combine(
                         getShowLogDateFlowUseCase(),
@@ -98,13 +108,14 @@ internal class PreferencesUIEffectHandler @Inject constructor(
                     },
                     getLogsDisplayLimitFlowUseCase(),
                 ) {
-                        (nightTheme, dateFormat, timeFormat),
+                        (nightTheme, monetEnabled, dateFormat, timeFormat),
                         showFirst,
                         (showSecond, intervals),
                         displayLimit,
                     ->
                     PreferencesUICommand.PreferencesLoaded(
                         nightTheme = nightTheme,
+                        monetEnabled = monetEnabled,
                         dateFormat = dateFormat,
                         timeFormat = timeFormat,
                         showLogDate = showFirst[0] as Boolean,
@@ -125,13 +136,18 @@ internal class PreferencesUIEffectHandler @Inject constructor(
             }
 
             is PreferencesUISideEffect.SaveNightTheme -> {
-                val theme = if (effect.themeIndex == 0) {
-                    AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                } else {
-                    effect.themeIndex
+                val theme = when (effect.themeIndex) {
+                    0 -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                    1 -> AppCompatDelegate.MODE_NIGHT_NO
+                    2 -> AppCompatDelegate.MODE_NIGHT_YES
+                    else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
                 }
                 setNightThemeUseCase(theme)
                 AppCompatDelegate.setDefaultNightMode(theme)
+            }
+
+            is PreferencesUISideEffect.SaveMonetEnabled -> {
+                setMonetEnabledUseCase(effect.enabled)
             }
 
             is PreferencesUISideEffect.SaveDateFormat -> {
@@ -174,3 +190,14 @@ internal class PreferencesUIEffectHandler @Inject constructor(
         }
     }
 }
+
+/**
+ * The three top level settings combined into one flow, so a change of any of them reloads the
+ * whole [PreferencesUICommand.PreferencesLoaded].
+ */
+private data class UiThemePreferences(
+    val nightTheme: Int,
+    val monetEnabled: Boolean,
+    val dateFormat: String,
+    val timeFormat: String,
+)

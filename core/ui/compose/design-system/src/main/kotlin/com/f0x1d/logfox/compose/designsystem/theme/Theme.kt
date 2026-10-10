@@ -10,21 +10,25 @@ import top.yukonga.miuix.kmp.theme.ThemeController
 /**
  * Single theme entry point of the app. Everything visual comes from [MiuixTheme].
  *
+ * By default the app renders with the Miuix color schemes ([ColorSchemeMode.Light] /
+ * [ColorSchemeMode.Dark]); Monet (wallpaper based) palettes are opt-in through the theme settings
+ * and only then the `MonetLight` / `MonetDark` modes are used.
+ *
  * @param darkTheme whether the dark color scheme should be used
- * @param dynamicColor whether the Monet (wallpaper based) palette should be used.
- *   Callers must only pass `true` when the platform actually supports dynamic colors.
+ * @param monetEnabled whether the Monet (wallpaper based) palette should be used. Callers are
+ *   responsible for only passing `true` when the platform supports dynamic colors.
  */
 @Composable
 fun LogFoxTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    monetEnabled: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val controller = remember(darkTheme, dynamicColor) {
+    val controller = remember(darkTheme, monetEnabled) {
         ThemeController(
             colorSchemeMode = when {
-                dynamicColor && darkTheme -> ColorSchemeMode.MonetDark
-                dynamicColor -> ColorSchemeMode.MonetLight
+                monetEnabled && darkTheme -> ColorSchemeMode.MonetDark
+                monetEnabled -> ColorSchemeMode.MonetLight
                 darkTheme -> ColorSchemeMode.Dark
                 else -> ColorSchemeMode.Light
             },
